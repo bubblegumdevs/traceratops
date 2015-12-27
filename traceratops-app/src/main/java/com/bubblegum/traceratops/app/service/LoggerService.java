@@ -16,8 +16,26 @@
 
 package com.bubblegum.traceratops.app.service;
 
-/**
- * Created by girish on 12/27/15.
- */
-public class LoggerService {
+import android.app.Service;
+import android.content.Intent;
+import android.os.IBinder;
+import android.os.RemoteException;
+import android.support.annotation.Nullable;
+
+import com.bubblegum.traceratops.ILoggerService;
+
+public class LoggerService extends Service {
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return mBinder;
+    }
+
+    private IBinder mBinder = new ILoggerService.Stub() {
+
+        @Override
+        public void log(String tag, String message, String stackTrace, String level) throws RemoteException {
+            // TODO Need to write proper implementation to reflect Logs onto UI
+        }
+    };
 }
