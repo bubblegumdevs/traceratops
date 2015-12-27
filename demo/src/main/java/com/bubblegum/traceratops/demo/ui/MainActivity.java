@@ -23,6 +23,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bubblegum.traceratops.demo.BuildConfig;
 import com.bubblegum.traceratops.demo.R;
 import com.bubblegum.traceratops.sdk.client.Log;
 
@@ -34,7 +35,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mLog = Log.getInstance(this, new Log.OnLoggerServiceExceptionListener() {
+        mLog = Log.getInstance(this, new Log.LoggerServiceConnectionCallbacks() {
+            @Override
+            public void onLoggerServiceConnected() {
+
+            }
+
+            @Override
+            public void onLoggerServiceDisconnected() {
+
+            }
+
             @Override
             public void onLoggerServiceException(Throwable t) {
                 Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();

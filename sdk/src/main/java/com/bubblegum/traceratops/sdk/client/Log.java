@@ -20,49 +20,112 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.bubblegum.traceratops.ILoggerService;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.ref.WeakReference;
+
 public final class Log implements LogProxy, ServiceConnection {
 
     private static Log sInstance;
 
+    private boolean mIsSafe = false;
+    private boolean mShouldLog = true;
+
     private ILoggerService mLoggerService;
-    private OnLoggerServiceExceptionListener mOnLoggerServiceExceptionListener;
+    private LoggerServiceConnectionCallbacks mLoggerServiceConnectionCallbacks;
+
+    private WeakReference<Context> mWeakContext;
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         mLoggerService = ILoggerService.Stub.asInterface(service);
-        android.util.Log.d("BBGM", "bound to service");
+        if(mWeakContext!=null && mWeakContext.get()!=null) {
+            mIsSafe = performSignatureCheck(mWeakContext.get(), name);
+            if(!mIsSafe) {
+                unbind();
+                mLoggerService = null;
+                if (mLoggerServiceConnectionCallbacks != null) {
+                    mLoggerServiceConnectionCallbacks.onLoggerServiceException(new SecurityException("Signature check failed for Traceratops logger service. Please check if Traceratops app is signed with same key as this app."));
+                }
+                return;
+            }
+        }
+        if(mLoggerServiceConnectionCallbacks!=null) {
+            mLoggerServiceConnectionCallbacks.onLoggerServiceConnected();
+        }
     }
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
         mLoggerService = null;
-        android.util.Log.d("BBGM", "disconnected from service");
+        if(mLoggerServiceConnectionCallbacks!=null) {
+            mLoggerServiceConnectionCallbacks.onLoggerServiceDisconnected();
+        }
     }
 
-    public interface OnLoggerServiceExceptionListener {
+    private boolean performSignatureCheck(Context context, ComponentName serverComponentName) {
+        try {
+            PackageManager pm = context.getPackageManager();
+            Signature[] clientSigs = pm.getPackageInfo(context.getPackageName(), PackageManager.GET_SIGNATURES).signatures;
+            Signature[] serverSigs = pm.getPackageInfo(serverComponentName.getPackageName(), PackageManager.GET_SIGNATURES).signatures;
+            for(int i =0; i < clientSigs.length; i++) {
+                if (!clientSigs[i].toCharsString().equals(serverSigs[i].toCharsString())) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
 
+    public void setShouldLog(boolean shouldLog) {
+        mShouldLog = shouldLog;
+    }
+
+    private boolean isLogging() {
+        return mIsSafe && mShouldLog && mLoggerService!=null;
+    }
+
+    public interface LoggerServiceConnectionCallbacks {
+
+        void onLoggerServiceConnected();
+        void onLoggerServiceDisconnected();
         void onLoggerServiceException(Throwable t);
 
     }
 
-    public static Log getInstance(@NonNull Context context, @Nullable OnLoggerServiceExceptionListener onLoggerServiceExceptionListener) {
+    public void setContextWeakly(Context context) {
+        mWeakContext = new WeakReference<>(context);
+    }
+
+    public static Log getInstance(@NonNull Context context, @Nullable LoggerServiceConnectionCallbacks loggerServiceConnectionCallbacks) {
         if(sInstance == null) {
-            sInstance = new Log(onLoggerServiceExceptionListener);
-            Intent binderIntent = new Intent("com.bubblegum.traceratops.BIND_LOGGER_SERVICE");
-            binderIntent.setClassName("com.bubblegum.traceratops.app", "com.bubblegum.traceratops.app.service.LoggerService");
-            context.bindService(binderIntent, sInstance, Context.BIND_AUTO_CREATE);
+            sInstance = new Log(loggerServiceConnectionCallbacks);
+            sInstance.setContextWeakly(context);
+            sInstance.attemptConnection();
         }
         return sInstance;
     }
 
-    private Log(@Nullable OnLoggerServiceExceptionListener onLoggerServiceExceptionListener) {
-        mOnLoggerServiceExceptionListener = onLoggerServiceExceptionListener;
+    private Log(@Nullable LoggerServiceConnectionCallbacks loggerServiceConnectionCallbacks) {
+        mLoggerServiceConnectionCallbacks = loggerServiceConnectionCallbacks;
+    }
+
+    private void attemptConnection() {
+        if(mWeakContext!=null && mWeakContext.get()!=null) {
+            Intent binderIntent = new Intent("com.bubblegum.traceratops.BIND_LOGGER_SERVICE");
+            binderIntent.setClassName("com.bubblegum.traceratops.app", "com.bubblegum.traceratops.app.service.LoggerService");
+            mWeakContext.get().bindService(binderIntent, sInstance, Context.BIND_AUTO_CREATE);
+        }
     }
 
     @Override
@@ -126,21 +189,37 @@ public final class Log implements LogProxy, ServiceConnection {
     }
 
     private void logInternal(String tag, String message, @Nullable Throwable throwable, String level) {
+        if(!isLogging()) {
+            if(mShouldLog) {
+                attemptConnection();
+            } else {
+                return;
+            }
+        }
         try {
             if (mLoggerService != null) {
-                android.util.Log.d("BBGM", "Sending log");
                 String errorMessage = "";
                 if(throwable!=null) {
-                    errorMessage = throwable.getMessage();
+                    errorMessage = getStackTraceAsString(throwable);
                 }
-                mLoggerService.log(tag, message, errorMessage, level); // TODO for now sending throwable's message. Need to send entire stack trace
+                mLoggerService.log(tag, message, errorMessage, level);
             }
         } catch (Throwable t) {
-            android.util.Log.d("BBGM", "Exception thrown");
-            if(mOnLoggerServiceExceptionListener!=null) {
-                mOnLoggerServiceExceptionListener.onLoggerServiceException(t);
+            if(mLoggerServiceConnectionCallbacks !=null) {
+                mLoggerServiceConnectionCallbacks.onLoggerServiceException(t);
             }
         }
     }
 
+    private String getStackTraceAsString(@NonNull Throwable t) {
+        StringWriter sw = new StringWriter();
+        t.printStackTrace(new PrintWriter(sw));
+        return sw.toString();
+    }
+
+    public void unbind() {
+        if(mWeakContext!=null && mWeakContext.get()!=null) {
+            mWeakContext.get().unbindService(this);
+        }
+    }
 }
