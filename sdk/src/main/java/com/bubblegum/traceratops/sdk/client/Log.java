@@ -16,17 +16,32 @@
 
 package com.bubblegum.traceratops.sdk.client;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.bubblegum.traceratops.ILoggerService;
 
-public final class Log implements LogProxy {
+public final class Log implements LogProxy, ServiceConnection {
 
     private static Log sInstance;
 
     private ILoggerService mLoggerService;
     private OnLoggerServiceExceptionListener mOnLoggerServiceExceptionListener;
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        mLoggerService = ILoggerService.Stub.asInterface(service);
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+        mLoggerService = null;
+    }
 
     private interface OnLoggerServiceExceptionListener {
 
@@ -34,15 +49,17 @@ public final class Log implements LogProxy {
 
     }
 
-    public static Log getInstance(@NonNull ILoggerService mLoggerService, @Nullable OnLoggerServiceExceptionListener onLoggerServiceExceptionListener) {
+    public static Log getInstance(@NonNull Context context, @Nullable OnLoggerServiceExceptionListener onLoggerServiceExceptionListener) {
         if(sInstance == null) {
-            sInstance = new Log(mLoggerService, onLoggerServiceExceptionListener);
+            sInstance = new Log(onLoggerServiceExceptionListener);
+            Intent binderIntent = new Intent(ILoggerService.class.getName());
+            binderIntent.setClassName("com.bubblegum.traceratops", "com.bubblegum.traceratops.app.service.LoggerService");
+            context.bindService(binderIntent, sInstance, Context.BIND_AUTO_CREATE);
         }
         return sInstance;
     }
 
-    private Log(@NonNull ILoggerService loggerService, @Nullable OnLoggerServiceExceptionListener onLoggerServiceExceptionListener) {
-        mLoggerService = loggerService;
+    private Log(@Nullable OnLoggerServiceExceptionListener onLoggerServiceExceptionListener) {
         mOnLoggerServiceExceptionListener = onLoggerServiceExceptionListener;
     }
 
