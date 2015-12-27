@@ -1,4 +1,4 @@
-package com.bubblegum.traceratopsapp;
+package com.bubblegum.app;
 
 import org.junit.Test;
 
