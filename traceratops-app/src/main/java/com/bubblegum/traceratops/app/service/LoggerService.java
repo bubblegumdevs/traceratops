@@ -20,7 +20,10 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.os.Vibrator;
 import android.support.annotation.Nullable;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.bubblegum.traceratops.ILoggerService;
 
@@ -35,7 +38,15 @@ public class LoggerService extends Service {
 
         @Override
         public void log(String tag, String message, String stackTrace, String level) throws RemoteException {
+            logImpl(tag, message, stackTrace, level);
             // TODO Need to write proper implementation to reflect Logs onto UI
         }
     };
+
+    private void logImpl(String tag, String message, String stackTrace, String level) {
+        Toast.makeText(LoggerService.this, message, Toast.LENGTH_SHORT).show();
+        Log.e("BBGM", "Ta Ta");
+        Vibrator v = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        v.vibrate(2000);
+    }
 }

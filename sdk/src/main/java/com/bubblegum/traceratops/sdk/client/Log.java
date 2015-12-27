@@ -36,14 +36,16 @@ public final class Log implements LogProxy, ServiceConnection {
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         mLoggerService = ILoggerService.Stub.asInterface(service);
+        android.util.Log.d("BBGM", "bound to service");
     }
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
         mLoggerService = null;
+        android.util.Log.d("BBGM", "disconnected from service");
     }
 
-    private interface OnLoggerServiceExceptionListener {
+    public interface OnLoggerServiceExceptionListener {
 
         void onLoggerServiceException(Throwable t);
 
@@ -52,8 +54,8 @@ public final class Log implements LogProxy, ServiceConnection {
     public static Log getInstance(@NonNull Context context, @Nullable OnLoggerServiceExceptionListener onLoggerServiceExceptionListener) {
         if(sInstance == null) {
             sInstance = new Log(onLoggerServiceExceptionListener);
-            Intent binderIntent = new Intent(ILoggerService.class.getName());
-            binderIntent.setClassName("com.bubblegum.traceratops", "com.bubblegum.traceratops.app.service.LoggerService");
+            Intent binderIntent = new Intent("com.bubblegum.traceratops.BIND_LOGGER_SERVICE");
+            binderIntent.setClassName("com.bubblegum.traceratops.app", "com.bubblegum.traceratops.app.service.LoggerService");
             context.bindService(binderIntent, sInstance, Context.BIND_AUTO_CREATE);
         }
         return sInstance;
@@ -123,12 +125,18 @@ public final class Log implements LogProxy, ServiceConnection {
         logInternal(tag, message, throwable, LogProxy.WTF);
     }
 
-    private void logInternal(String tag, String message, Throwable throwable, String level) {
+    private void logInternal(String tag, String message, @Nullable Throwable throwable, String level) {
         try {
             if (mLoggerService != null) {
-                mLoggerService.log(tag, message, throwable.getMessage(), level); // TODO for now sending throwable's message. Need to send entire stack trace
+                android.util.Log.d("BBGM", "Sending log");
+                String errorMessage = "";
+                if(throwable!=null) {
+                    errorMessage = throwable.getMessage();
+                }
+                mLoggerService.log(tag, message, errorMessage, level); // TODO for now sending throwable's message. Need to send entire stack trace
             }
         } catch (Throwable t) {
+            android.util.Log.d("BBGM", "Exception thrown");
             if(mOnLoggerServiceExceptionListener!=null) {
                 mOnLoggerServiceExceptionListener.onLoggerServiceException(t);
             }
