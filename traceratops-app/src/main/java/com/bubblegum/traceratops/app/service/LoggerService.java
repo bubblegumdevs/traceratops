@@ -20,6 +20,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.os.Vibrator;
 import android.support.annotation.Nullable;
 
 import com.bubblegum.traceratops.ILoggerService;
@@ -41,6 +42,7 @@ public class LoggerService extends Service {
     };
 
     private void logImpl(String tag, String message, String stackTrace, String level) {
-
+        Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        vibrator.vibrate(500);
     }
 }

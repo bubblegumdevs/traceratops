@@ -26,14 +26,14 @@ public interface LogProxy {
     String D = "d";
     String WTF = "wtf";
 
-    void d(String tag, String message);
-    void d(String tag, String message, Throwable throwable);
-    void e(String tag, String message);
-    void e(String tag, String message, Throwable throwable);
-    void v(String tag, String message);
-    void v(String tag, String message, Throwable throwable);
-    void w(String tag, String message);
-    void w(String tag, String message, Throwable throwable);
-    void wtf(String tag, String message);
-    void wtf(String tag, String message, Throwable throwable);
+    boolean d(String tag, String message);
+    boolean d(String tag, String message, Throwable throwable);
+    boolean e(String tag, String message);
+    boolean e(String tag, String message, Throwable throwable);
+    boolean v(String tag, String message);
+    boolean v(String tag, String message, Throwable throwable);
+    boolean w(String tag, String message);
+    boolean w(String tag, String message, Throwable throwable);
+    boolean wtf(String tag, String message);
+    boolean wtf(String tag, String message, Throwable throwable);
 }

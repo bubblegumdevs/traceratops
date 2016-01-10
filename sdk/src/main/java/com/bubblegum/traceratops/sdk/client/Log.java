@@ -32,12 +32,189 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.ref.WeakReference;
 
-public final class Log implements LogProxy, ServiceConnection {
+public final class Log implements ServiceConnection {
 
     private static Log sInstance;
 
+    private LogProxy mLogProxy = LogProxies.DEFAULT_LOG_PROXY;
+    
+    private boolean dInternal(String tag, String message) {
+        if(mLogProxy == null || mLogProxy.d(tag, message)) {
+            logInternal(tag, message, null, LogProxy.D);
+        }
+        return true;
+    }
+    
+    private boolean dInternal(String tag, String message, Throwable throwable) {
+        if(mLogProxy == null || mLogProxy.d(tag, message, throwable)) {
+            logInternal(tag, message, throwable, LogProxy.D);
+        }
+        return true;
+    }
+    
+    private boolean eInternal(String tag, String message) {
+        if(mLogProxy == null || mLogProxy.e(tag, message)) {
+            logInternal(tag, message, null, LogProxy.E);
+        }
+        return true;
+    }
+    
+    private boolean eInternal(String tag, String message, Throwable throwable) {
+        if(mLogProxy == null || mLogProxy.e(tag, message, throwable)) {
+            logInternal(tag, message, throwable, LogProxy.E);
+        }
+        return true;
+    }
+    
+    private boolean vInternal(String tag, String message) {
+        if(mLogProxy == null || mLogProxy.v(tag, message)) {
+            logInternal(tag, message, null, LogProxy.V);
+        }
+        return true;
+    }
+    
+    private boolean vInternal(String tag, String message, Throwable throwable) {
+        if(mLogProxy == null || mLogProxy.v(tag, message, throwable)) {
+            logInternal(tag, message, throwable, LogProxy.V);
+        }
+        return true;
+    }
+    
+    private boolean wInternal(String tag, String message) {
+        if(mLogProxy == null || mLogProxy.w(tag, message)) {
+            logInternal(tag, message, null, LogProxy.W);
+        }
+        return true;
+    }
+    
+    private boolean wInternal(String tag, String message, Throwable throwable) {
+        if(mLogProxy == null || mLogProxy.w(tag, message, throwable)) {
+            logInternal(tag, message, throwable, LogProxy.W);
+        }
+        return true;
+    }
+
+    private boolean wtfInternal(String tag, String message) {
+        if(mLogProxy == null || mLogProxy.wtf(tag, message)) {
+            logInternal(tag, message, null, LogProxy.WTF);
+        }
+        return true;
+    }
+    
+    private boolean wtfInternal(String tag, String message, Throwable throwable) {
+        if(mLogProxy == null || mLogProxy.wtf(tag, message, throwable)) {
+            logInternal(tag, message, throwable, LogProxy.WTF);
+        }
+        return true;
+    }
+
+    public static void d(String tag, String message) {
+        if(sInstance!=null) {
+            sInstance.dInternal(tag, message);
+        } else {
+            warnNotLogging();
+        }
+    }
+
+    public static void d(String tag, String message, Throwable throwable) {
+        if(sInstance!=null) {
+            sInstance.dInternal(tag, message, throwable);
+        } else {
+            warnNotLogging();
+        }
+    }
+
+    public static void e(String tag, String message) {
+        if(sInstance!=null) {
+            sInstance.eInternal(tag, message);
+        } else {
+            warnNotLogging();
+        }
+    }
+
+    public static void e(String tag, String message, Throwable throwable) {
+        if(sInstance!=null) {
+            sInstance.eInternal(tag, message, throwable);
+        } else {
+            warnNotLogging();
+        }
+    }
+
+    public static void v(String tag, String message) {
+        if(sInstance!=null) {
+            sInstance.vInternal(tag, message);
+        } else {
+            warnNotLogging();
+        }
+    }
+
+    public static void v(String tag, String message, Throwable throwable) {
+        if(sInstance!=null) {
+            sInstance.vInternal(tag, message, throwable);
+        } else {
+            warnNotLogging();
+        }
+    }
+
+    public static void w(String tag, String message) {
+        if(sInstance!=null) {
+            sInstance.wInternal(tag, message);
+        } else {
+            warnNotLogging();
+        }
+    }
+
+    public static void w(String tag, String message, Throwable throwable) {
+        if(sInstance!=null) {
+            sInstance.wInternal(tag, message, throwable);
+        } else {
+            warnNotLogging();
+        }
+    }
+
+    public static void wtf(String tag, String message) {
+        if(sInstance!=null) {
+            sInstance.wtfInternal(tag, message);
+        } else {
+            warnNotLogging();
+        }
+    }
+
+    public static void wtf(String tag, String message, Throwable throwable) {
+        if(sInstance!=null) {
+            sInstance.wtfInternal(tag, message, throwable);
+        } else {
+            warnNotLogging();
+        }
+    }
+
+    private void logInternal(String tag, String message, @Nullable Throwable throwable, String level) {
+        if(!isLogging()) {
+            if(mShouldLog) {
+                attemptConnection();
+            } else {
+                return;
+            }
+        }
+        try {
+            if (mLoggerService != null) {
+                String errorMessage = "";
+                if(throwable!=null) {
+                    errorMessage = getStackTraceAsString(throwable);
+                }
+                mLoggerService.log(tag, message, errorMessage, level);
+            }
+        } catch (Throwable t) {
+            if(mLoggerServiceConnectionCallbacks !=null) {
+                mLoggerServiceConnectionCallbacks.onLoggerServiceException(t);
+            }
+        }
+    }
+
     private boolean mIsSafe = false;
     private boolean mShouldLog = true;
+
+    private boolean mHasWarnedNotLogging = false;
 
     private ILoggerService mLoggerService;
     private LoggerServiceConnectionCallbacks mLoggerServiceConnectionCallbacks;
@@ -87,12 +264,17 @@ public final class Log implements LogProxy, ServiceConnection {
         }
     }
 
-    public void setShouldLog(boolean shouldLog) {
+    public Log setShouldLog(boolean shouldLog) {
         mShouldLog = shouldLog;
+        return this;
     }
 
     private boolean isLogging() {
         return mIsSafe && mShouldLog && mLoggerService!=null;
+    }
+
+    private static void warnNotLogging() {
+        // TODO Write something suitable for this
     }
 
     public interface LoggerServiceConnectionCallbacks {
@@ -103,111 +285,54 @@ public final class Log implements LogProxy, ServiceConnection {
 
     }
 
-    public void setContextWeakly(Context context) {
+    private void setContextWeakly(Context context) {
         mWeakContext = new WeakReference<>(context);
     }
 
-    public static Log getInstance(@NonNull Context context, @Nullable LoggerServiceConnectionCallbacks loggerServiceConnectionCallbacks) {
-        if(sInstance == null) {
-            sInstance = new Log(loggerServiceConnectionCallbacks);
-            sInstance.setContextWeakly(context);
-            sInstance.attemptConnection();
-        }
-        return sInstance;
+    private Log() {
+
     }
 
-    private Log(@Nullable LoggerServiceConnectionCallbacks loggerServiceConnectionCallbacks) {
-        mLoggerServiceConnectionCallbacks = loggerServiceConnectionCallbacks;
+    public static class Builder {
+
+        private final Log mInstance;
+
+        private Builder(Context context) {
+            mInstance = new Log();
+            mInstance.setContextWeakly(context);
+        }
+
+        public Builder withServiceConnectionCallbacks(@Nullable LoggerServiceConnectionCallbacks loggerServiceConnectionCallbacks) {
+            mInstance.mLoggerServiceConnectionCallbacks = loggerServiceConnectionCallbacks;
+            return this;
+        }
+
+        public Builder withLogProxy(@Nullable LogProxy logProxy) {
+            mInstance.mLogProxy = logProxy;
+            return this;
+        }
+
+        public Builder shouldLog(boolean shouldLog) {
+            mInstance.setShouldLog(shouldLog);
+            return this;
+        }
+
+        public Log connect() {
+            sInstance = mInstance;
+            sInstance.attemptConnection();
+            return sInstance;
+        }
+    }
+
+    public static Log.Builder setup(Context context) {
+        return new Log.Builder(context);
     }
 
     private void attemptConnection() {
-        if(mWeakContext!=null && mWeakContext.get()!=null) {
+        if(sInstance!=null && mWeakContext!=null && mWeakContext.get()!=null) {
             Intent binderIntent = new Intent("com.bubblegum.traceratops.BIND_LOGGER_SERVICE");
             binderIntent.setClassName("com.bubblegum.traceratops.app", "com.bubblegum.traceratops.app.service.LoggerService");
             mWeakContext.get().bindService(binderIntent, sInstance, Context.BIND_AUTO_CREATE);
-        }
-    }
-
-    @Override
-    public void d(String tag, String message) {
-        android.util.Log.d(tag, message);
-        logInternal(tag, message, null, LogProxy.D);
-    }
-
-    @Override
-    public void d(String tag, String message, Throwable throwable) {
-        android.util.Log.d(tag, message, throwable);
-        logInternal(tag, message, throwable, LogProxy.D);
-    }
-
-    @Override
-    public void e(String tag, String message) {
-        android.util.Log.e(tag, message);
-        logInternal(tag, message, null, LogProxy.E);
-    }
-
-    @Override
-    public void e(String tag, String message, Throwable throwable) {
-        android.util.Log.e(tag, message, throwable);
-        logInternal(tag, message, throwable, LogProxy.E);
-    }
-
-    @Override
-    public void v(String tag, String message) {
-        android.util.Log.v(tag, message);
-        logInternal(tag, message, null, LogProxy.V);
-    }
-
-    @Override
-    public void v(String tag, String message, Throwable throwable) {
-        android.util.Log.v(tag, message, throwable);
-        logInternal(tag, message, throwable, LogProxy.V);
-    }
-
-    @Override
-    public void w(String tag, String message) {
-        android.util.Log.w(tag, message);
-        logInternal(tag, message, null, LogProxy.W);
-    }
-
-    @Override
-    public void w(String tag, String message, Throwable throwable) {
-        android.util.Log.w(tag, message, throwable);
-        logInternal(tag, message, throwable, LogProxy.W);
-    }
-
-    @Override
-    public void wtf(String tag, String message) {
-        android.util.Log.wtf(tag, message);
-        logInternal(tag, message, null, LogProxy.WTF);
-    }
-
-    @Override
-    public void wtf(String tag, String message, Throwable throwable) {
-        android.util.Log.wtf(tag, message, throwable);
-        logInternal(tag, message, throwable, LogProxy.WTF);
-    }
-
-    private void logInternal(String tag, String message, @Nullable Throwable throwable, String level) {
-        if(!isLogging()) {
-            if(mShouldLog) {
-                attemptConnection();
-            } else {
-                return;
-            }
-        }
-        try {
-            if (mLoggerService != null) {
-                String errorMessage = "";
-                if(throwable!=null) {
-                    errorMessage = getStackTraceAsString(throwable);
-                }
-                mLoggerService.log(tag, message, errorMessage, level);
-            }
-        } catch (Throwable t) {
-            if(mLoggerServiceConnectionCallbacks !=null) {
-                mLoggerServiceConnectionCallbacks.onLoggerServiceException(t);
-            }
         }
     }
 

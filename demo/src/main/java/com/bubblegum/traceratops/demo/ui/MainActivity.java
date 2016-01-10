@@ -26,31 +26,16 @@ import android.widget.Toast;
 import com.bubblegum.traceratops.demo.BuildConfig;
 import com.bubblegum.traceratops.demo.R;
 import com.bubblegum.traceratops.sdk.client.Log;
+import com.bubblegum.traceratops.sdk.client.LogProxies;
 
 public class MainActivity extends AppCompatActivity {
 
     private static String TAG = "BBGM";
-    Log mLog = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mLog = Log.getInstance(this, new Log.LoggerServiceConnectionCallbacks() {
-            @Override
-            public void onLoggerServiceConnected() {
 
-            }
-
-            @Override
-            public void onLoggerServiceDisconnected() {
-
-            }
-
-            @Override
-            public void onLoggerServiceException(Throwable t) {
-                Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
 
         setContentView(R.layout.activity_main);
 
@@ -58,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mLog.d(TAG, "Click on image view");
+                Log.d(TAG, "Click on image view");
             }
         });
     }
