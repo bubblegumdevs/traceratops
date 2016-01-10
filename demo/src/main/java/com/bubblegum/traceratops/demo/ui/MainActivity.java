@@ -21,22 +21,17 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.Toast;
 
-import com.bubblegum.traceratops.demo.BuildConfig;
 import com.bubblegum.traceratops.demo.R;
 import com.bubblegum.traceratops.sdk.client.Log;
-import com.bubblegum.traceratops.sdk.client.LogProxies;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static String TAG = "BBGM";
+    private static String TAG = "bubblegum_mainactivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
         setContentView(R.layout.activity_main);
 
         ImageView imageView = (ImageView) findViewById(R.id.image_view);

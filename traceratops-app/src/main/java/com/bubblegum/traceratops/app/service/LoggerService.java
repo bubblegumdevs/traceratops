@@ -22,10 +22,14 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.bubblegum.traceratops.ILoggerService;
+import com.bubblegum.traceratops.app.db.LogDbHelper;
 
 public class LoggerService extends Service {
+    private static final String TAG = "bubblegum_loggerservice";
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
