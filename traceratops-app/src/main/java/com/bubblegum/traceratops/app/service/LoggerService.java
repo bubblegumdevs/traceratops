@@ -20,15 +20,19 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.os.Vibrator;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.bubblegum.traceratops.ILoggerService;
-import com.bubblegum.traceratops.app.db.LogDbHelper;
+import com.bubblegum.traceratops.app.TraceratopsApplication;
+import com.bubblegum.traceratops.app.model.LogEntry;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class LoggerService extends Service {
     private static final String TAG = "bubblegum_loggerservice";
+
+    ExecutorService mExecutorService = Executors.newFixedThreadPool(1);
 
     @Nullable
     @Override
@@ -39,14 +43,32 @@ public class LoggerService extends Service {
     private IBinder mBinder = new ILoggerService.Stub() {
 
         @Override
-        public void log(String tag, String message, String stackTrace, String level) throws RemoteException {
-            logImpl(tag, message, stackTrace, level);
-            // TODO Need to write proper implementation to reflect Logs onto UI
+        public void log(String tag, String message, String stackTrace, int level) throws RemoteException {
+            queueLogTask(tag, message, stackTrace, level);
         }
     };
 
-    private void logImpl(String tag, String message, String stackTrace, String level) {
-        Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        vibrator.vibrate(500);
+    private void queueLogTask(String tag, String message, String stackTrace, int level) {
+        mExecutorService.submit(new LogTask(tag, message, stackTrace, level, System.currentTimeMillis()));
+    }
+
+    private class LogTask implements Runnable {
+
+        final LogEntry logEntry;
+
+        public LogTask(String tag, String message, String stackTrace, int level, long timestamp) {
+            logEntry = new LogEntry();
+            logEntry.tag = tag;
+            logEntry.description = message;
+            logEntry.level = level;
+            logEntry.stackTrace = stackTrace;
+            logEntry.timestamp = timestamp;
+        }
+
+        @Override
+        public void run() {
+            TraceratopsApplication.from(getApplication()).addEntry(logEntry);
+            // TODO add database insertion code
+        }
     }
 }

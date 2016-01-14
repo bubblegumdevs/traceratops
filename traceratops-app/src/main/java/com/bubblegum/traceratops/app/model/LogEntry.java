@@ -21,4 +21,5 @@ public class LogEntry extends BaseEntry {
     public int level;
     public String tag;
     public String description;
+    public String stackTrace;
 }

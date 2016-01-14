@@ -65,6 +65,20 @@ public final class Log implements ServiceConnection {
         }
         return true;
     }
+
+    private boolean iInternal(String tag, String message) {
+        if(mLogProxy == null || mLogProxy.e(tag, message)) {
+            logInternal(tag, message, null, LogProxy.I);
+        }
+        return true;
+    }
+
+    private boolean iInternal(String tag, String message, Throwable throwable) {
+        if(mLogProxy == null || mLogProxy.e(tag, message, throwable)) {
+            logInternal(tag, message, throwable, LogProxy.I);
+        }
+        return true;
+    }
     
     private boolean vInternal(String tag, String message) {
         if(mLogProxy == null || mLogProxy.v(tag, message)) {
@@ -188,7 +202,7 @@ public final class Log implements ServiceConnection {
         }
     }
 
-    private void logInternal(String tag, String message, @Nullable Throwable throwable, String level) {
+    private void logInternal(String tag, String message, @Nullable Throwable throwable, int level) {
         if(!isLogging()) {
             if(mShouldLog) {
                 attemptConnection();

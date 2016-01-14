@@ -20,14 +20,18 @@ package com.bubblegum.traceratops.sdk.client;
 
 public interface LogProxy {
 
-    String W = "w";
-    String V = "v";
-    String E = "e";
-    String D = "d";
-    String WTF = "wtf";
+
+    int V = 2;
+    int D = 3;
+    int I = 4;
+    int W = 5;
+    int E = 6;
+    int WTF = 7;
 
     boolean d(String tag, String message);
     boolean d(String tag, String message, Throwable throwable);
+    boolean i(String tag, String message);
+    boolean i(String tag, String message, Throwable throwable);
     boolean e(String tag, String message);
     boolean e(String tag, String message, Throwable throwable);
     boolean v(String tag, String message);

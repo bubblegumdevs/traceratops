@@ -32,6 +32,18 @@ public class LogProxies {
         }
 
         @Override
+        public boolean i(String tag, String message) {
+            android.util.Log.i(tag, message);
+            return true;
+        }
+
+        @Override
+        public boolean i(String tag, String message, Throwable throwable) {
+            android.util.Log.i(tag, message, throwable);
+            return true;
+        }
+
+        @Override
         public boolean e(String tag, String message) {
             android.util.Log.e(tag, message);
             return true;
@@ -88,6 +100,16 @@ public class LogProxies {
 
         @Override
         public boolean d(String tag, String message, Throwable throwable) {
+            return true;
+        }
+
+        @Override
+        public boolean i(String tag, String message) {
+            return true;
+        }
+
+        @Override
+        public boolean i(String tag, String message, Throwable throwable) {
             return true;
         }
 

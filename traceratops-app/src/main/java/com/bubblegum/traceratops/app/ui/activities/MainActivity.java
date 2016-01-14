@@ -14,10 +14,17 @@
  * limitations under the License.
  */
 
-package com.bubblegum.traceratops;
+package com.bubblegum.traceratops.app.ui.activities;
 
-interface ILoggerService {
+import android.os.Bundle;
 
-    void log(String tag, String message, String stackTrace, int level);
+import com.bubblegum.traceratops.app.R;
 
+public class MainActivity extends BaseActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+    }
 }

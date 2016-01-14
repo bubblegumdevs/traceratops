@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package com.bubblegum.traceratops;
+package com.bubblegum.traceratops.app.ui.activities;
 
-interface ILoggerService {
+import android.support.v7.app.AppCompatActivity;
 
-    void log(String tag, String message, String stackTrace, int level);
-
+public abstract class BaseActivity extends AppCompatActivity {
 }

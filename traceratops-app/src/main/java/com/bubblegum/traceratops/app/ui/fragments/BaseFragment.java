@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package com.bubblegum.traceratops;
+package com.bubblegum.traceratops.app.ui.fragments;
 
-interface ILoggerService {
+import android.support.v4.app.Fragment;
 
-    void log(String tag, String message, String stackTrace, int level);
-
+public abstract class BaseFragment extends Fragment {
 }

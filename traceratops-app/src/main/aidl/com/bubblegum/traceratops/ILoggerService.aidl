@@ -18,6 +18,6 @@ package com.bubblegum.traceratops;
 
 interface ILoggerService {
     
-    void log(String tag, String message, String stackTrace, String level);
+    void log(String tag, String message, String stackTrace, int level);
     
 }
