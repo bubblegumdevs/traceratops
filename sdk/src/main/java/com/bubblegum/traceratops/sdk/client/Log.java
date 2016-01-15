@@ -32,11 +32,21 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.ref.WeakReference;
 
-public final class Log implements ServiceConnection {
+public final class Log {
 
-    private static Log sInstance;
+    static Log sInstance;
+    boolean mShouldLog;
+    private ILoggerService mLoggerService;
 
-    private LogProxy mLogProxy = LogProxies.DEFAULT_LOG_PROXY;
+    LogProxy mLogProxy = LogProxies.DEFAULT_LOG_PROXY;
+
+    Log() {
+
+    }
+
+    void setLoggerService(ILoggerService loggerService) {
+        mLoggerService = loggerService;
+    }
     
     private boolean dInternal(String tag, String message) {
         if(mLogProxy == null || mLogProxy.d(tag, message)) {
@@ -205,7 +215,7 @@ public final class Log implements ServiceConnection {
     private void logInternal(String tag, String message, @Nullable Throwable throwable, int level) {
         if(!isLogging()) {
             if(mShouldLog) {
-                attemptConnection();
+                Traceratops.sInstance.attemptConnection();
             } else {
                 return;
             }
@@ -219,63 +229,9 @@ public final class Log implements ServiceConnection {
                 mLoggerService.log(tag, message, errorMessage, level);
             }
         } catch (Throwable t) {
-            if(mLoggerServiceConnectionCallbacks !=null) {
-                mLoggerServiceConnectionCallbacks.onLoggerServiceException(t);
+            if(Traceratops.sInstance.mLoggerServiceConnectionCallbacks !=null) {
+                Traceratops.sInstance.mLoggerServiceConnectionCallbacks.onLoggerServiceException(t);
             }
-        }
-    }
-
-    private boolean mIsSafe = false;
-    private boolean mShouldLog = true;
-
-    private boolean mHasWarnedNotLogging = false;
-
-    private ILoggerService mLoggerService;
-    private LoggerServiceConnectionCallbacks mLoggerServiceConnectionCallbacks;
-
-    private WeakReference<Context> mWeakContext;
-
-    @Override
-    public void onServiceConnected(ComponentName name, IBinder service) {
-        mLoggerService = ILoggerService.Stub.asInterface(service);
-        if(mWeakContext!=null && mWeakContext.get()!=null) {
-            mIsSafe = performSignatureCheck(mWeakContext.get(), name);
-            if(!mIsSafe) {
-                unbind();
-                mLoggerService = null;
-                if (mLoggerServiceConnectionCallbacks != null) {
-                    mLoggerServiceConnectionCallbacks.onLoggerServiceException(new SecurityException("Signature check failed for Traceratops logger service. Please check if Traceratops app is signed with same key as this app."));
-                }
-                return;
-            }
-            Debug.sInstance = new Debug(mLoggerService);
-        }
-        if(mLoggerServiceConnectionCallbacks!=null) {
-            mLoggerServiceConnectionCallbacks.onLoggerServiceConnected();
-        }
-    }
-
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-        mLoggerService = null;
-        if(mLoggerServiceConnectionCallbacks!=null) {
-            mLoggerServiceConnectionCallbacks.onLoggerServiceDisconnected();
-        }
-    }
-
-    private boolean performSignatureCheck(Context context, ComponentName serverComponentName) {
-        try {
-            PackageManager pm = context.getPackageManager();
-            Signature[] clientSigs = pm.getPackageInfo(context.getPackageName(), PackageManager.GET_SIGNATURES).signatures;
-            Signature[] serverSigs = pm.getPackageInfo(serverComponentName.getPackageName(), PackageManager.GET_SIGNATURES).signatures;
-            for(int i =0; i < clientSigs.length; i++) {
-                if (!clientSigs[i].toCharsString().equals(serverSigs[i].toCharsString())) {
-                    return false;
-                }
-            }
-            return true;
-        } catch (Throwable t) {
-            return false;
         }
     }
 
@@ -285,81 +241,16 @@ public final class Log implements ServiceConnection {
     }
 
     private boolean isLogging() {
-        return mIsSafe && mShouldLog && mLoggerService!=null;
+        return Traceratops.sInstance.mIsSafe && mShouldLog && mLoggerService!=null;
     }
 
     static void warnNotLogging() {
         // TODO Write something suitable for this
     }
 
-    public interface LoggerServiceConnectionCallbacks {
-
-        void onLoggerServiceConnected();
-        void onLoggerServiceDisconnected();
-        void onLoggerServiceException(Throwable t);
-
-    }
-
-    private void setContextWeakly(Context context) {
-        mWeakContext = new WeakReference<>(context);
-    }
-
-    private Log() {
-
-    }
-
-    public static class Builder {
-
-        private final Log mInstance;
-
-        private Builder(Context context) {
-            mInstance = new Log();
-            mInstance.setContextWeakly(context);
-        }
-
-        public Builder withServiceConnectionCallbacks(@Nullable LoggerServiceConnectionCallbacks loggerServiceConnectionCallbacks) {
-            mInstance.mLoggerServiceConnectionCallbacks = loggerServiceConnectionCallbacks;
-            return this;
-        }
-
-        public Builder withLogProxy(@Nullable LogProxy logProxy) {
-            mInstance.mLogProxy = logProxy;
-            return this;
-        }
-
-        public Builder shouldLog(boolean shouldLog) {
-            mInstance.setShouldLog(shouldLog);
-            return this;
-        }
-
-        public Log connect() {
-            sInstance = mInstance;
-            sInstance.attemptConnection();
-            return sInstance;
-        }
-    }
-
-    public static Log.Builder setup(Context context) {
-        return new Log.Builder(context);
-    }
-
-    private void attemptConnection() {
-        if(sInstance!=null && mWeakContext!=null && mWeakContext.get()!=null) {
-            Intent binderIntent = new Intent("com.bubblegum.traceratops.BIND_LOGGER_SERVICE");
-            binderIntent.setClassName("com.bubblegum.traceratops.app", "com.bubblegum.traceratops.app.service.LoggerService");
-            mWeakContext.get().bindService(binderIntent, sInstance, Context.BIND_AUTO_CREATE);
-        }
-    }
-
     private String getStackTraceAsString(@NonNull Throwable t) {
         StringWriter sw = new StringWriter();
         t.printStackTrace(new PrintWriter(sw));
         return sw.toString();
-    }
-
-    public void unbind() {
-        if(mWeakContext!=null && mWeakContext.get()!=null) {
-            mWeakContext.get().unbindService(this);
-        }
     }
 }

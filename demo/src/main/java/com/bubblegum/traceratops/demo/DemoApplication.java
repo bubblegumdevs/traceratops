@@ -20,14 +20,15 @@ import android.app.Application;
 
 import com.bubblegum.traceratops.sdk.client.Log;
 import com.bubblegum.traceratops.sdk.client.LogProxies;
+import com.bubblegum.traceratops.sdk.client.Traceratops;
 
 public class DemoApplication extends Application {
 
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.setup(this)
-                .withServiceConnectionCallbacks(new Log.LoggerServiceConnectionCallbacks() {
+        Traceratops.setup(this)
+                .withServiceConnectionCallbacks(new Traceratops.LoggerServiceConnectionCallbacks() {
                     @Override
                     public void onLoggerServiceConnected() {
 
