@@ -15,20 +15,10 @@
   ~ limitations under the License.
   -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- TODO: Need to write Toolbar implementation-->
+    <item android:id="@+id/menu_debug_add"
+        android:title="Add"
+        android:icon="@drawable/ic_action_add" />
 
-    <!-- TODO: Need to add navigation drawer -->
-
-    <!-- TODO: Need to remove static fragment tag -->
-
-    <fragment
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        class="com.bubblegum.traceratops.app.ui.fragments.DebugFragment"
-        android:id="@+id/fragment_temp_should_remove_soon" />
-
-</FrameLayout>
+</menu>

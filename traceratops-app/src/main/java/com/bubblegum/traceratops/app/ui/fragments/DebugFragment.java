@@ -23,15 +23,18 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.bubblegum.traceratops.app.R;
 import com.bubblegum.traceratops.app.ui.adapters.DebugItemAdapter;
 
-import java.util.ArrayList;
-
 public class DebugFragment extends BaseFragment {
+
+    private static final String ADD_PREFERENCE_TAG = "com.bubblegum.traceratops.app.AddDebugPreference";
 
     RecyclerView mRecyclerView;
     DebugItemAdapter mDebugItemAdapter;
@@ -51,6 +54,28 @@ public class DebugFragment extends BaseFragment {
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(llm);
         mRecyclerView.setAdapter(mDebugItemAdapter);
+        setHasOptionsMenu(true);
         super.onViewCreated(view, savedInstanceState);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        menu.clear();
+        inflater.inflate(R.menu.menu_debug, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_debug_add:
+                addPreference();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void addPreference() {
+        new AddDebugPreferenceDialogFragment().show(getChildFragmentManager(), ADD_PREFERENCE_TAG);
     }
 }
