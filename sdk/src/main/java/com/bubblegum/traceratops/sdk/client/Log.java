@@ -16,13 +16,6 @@
 
 package com.bubblegum.traceratops.sdk.client;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
-import android.content.pm.Signature;
-import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -30,7 +23,6 @@ import com.bubblegum.traceratops.ILoggerService;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.ref.WeakReference;
 
 public final class Log {
 
@@ -136,7 +128,7 @@ public final class Log {
         if(sInstance!=null) {
             sInstance.dInternal(tag, message);
         } else {
-            warnNotLogging();
+            Traceratops.warnNotLogging();
         }
     }
 
@@ -144,7 +136,7 @@ public final class Log {
         if(sInstance!=null) {
             sInstance.dInternal(tag, message, throwable);
         } else {
-            warnNotLogging();
+            Traceratops.warnNotLogging();
         }
     }
 
@@ -152,7 +144,7 @@ public final class Log {
         if(sInstance!=null) {
             sInstance.eInternal(tag, message);
         } else {
-            warnNotLogging();
+            Traceratops.warnNotLogging();
         }
     }
 
@@ -160,7 +152,7 @@ public final class Log {
         if(sInstance!=null) {
             sInstance.eInternal(tag, message, throwable);
         } else {
-            warnNotLogging();
+            Traceratops.warnNotLogging();
         }
     }
 
@@ -168,7 +160,7 @@ public final class Log {
         if(sInstance!=null) {
             sInstance.vInternal(tag, message);
         } else {
-            warnNotLogging();
+            Traceratops.warnNotLogging();
         }
     }
 
@@ -176,7 +168,7 @@ public final class Log {
         if(sInstance!=null) {
             sInstance.vInternal(tag, message, throwable);
         } else {
-            warnNotLogging();
+            Traceratops.warnNotLogging();
         }
     }
 
@@ -184,7 +176,7 @@ public final class Log {
         if(sInstance!=null) {
             sInstance.wInternal(tag, message);
         } else {
-            warnNotLogging();
+            Traceratops.warnNotLogging();
         }
     }
 
@@ -192,7 +184,7 @@ public final class Log {
         if(sInstance!=null) {
             sInstance.wInternal(tag, message, throwable);
         } else {
-            warnNotLogging();
+            Traceratops.warnNotLogging();
         }
     }
 
@@ -200,7 +192,7 @@ public final class Log {
         if(sInstance!=null) {
             sInstance.wtfInternal(tag, message);
         } else {
-            warnNotLogging();
+            Traceratops.warnNotLogging();
         }
     }
 
@@ -208,7 +200,7 @@ public final class Log {
         if(sInstance!=null) {
             sInstance.wtfInternal(tag, message, throwable);
         } else {
-            warnNotLogging();
+            Traceratops.warnNotLogging();
         }
     }
 
@@ -243,11 +235,7 @@ public final class Log {
     private boolean isLogging() {
         return Traceratops.sInstance.mIsSafe && mShouldLog && mLoggerService!=null;
     }
-
-    static void warnNotLogging() {
-        // TODO Write something suitable for this
-    }
-
+    
     private String getStackTraceAsString(@NonNull Throwable t) {
         StringWriter sw = new StringWriter();
         t.printStackTrace(new PrintWriter(sw));

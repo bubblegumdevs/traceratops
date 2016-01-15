@@ -33,7 +33,6 @@ import java.lang.ref.WeakReference;
 public class Traceratops implements ServiceConnection {
 
     boolean mIsSafe = false;
-    private boolean mShouldLog = true;
 
     private boolean mHasWarnedNotLogging = false;
 
@@ -134,6 +133,7 @@ public class Traceratops implements ServiceConnection {
 
         public Traceratops connect() {
             sInstance = mInstance;
+            Log.sInstance = mLogInstance;
             sInstance.attemptConnection();
             return sInstance;
         }
@@ -141,6 +141,10 @@ public class Traceratops implements ServiceConnection {
 
     public static Traceratops.Builder setup(Context context) {
         return new Traceratops.Builder(context);
+    }
+
+    static void warnNotLogging() {
+        // TODO Write something suitable for this
     }
 
     public interface LoggerServiceConnectionCallbacks {

@@ -55,7 +55,7 @@ public class Debug {
 
     public static String getString(String key, String defaultValue) {
         if (sInstance == null) {
-            Log.warnNotLogging();
+            Traceratops.warnNotLogging();
             return defaultValue;
         } else {
             return sInstance.getStringInternal(key, defaultValue);
@@ -64,7 +64,7 @@ public class Debug {
 
     public static boolean getBoolean(String key, boolean defaultValue) {
         if (sInstance == null) {
-            Log.warnNotLogging();
+            Traceratops.warnNotLogging();
             return defaultValue;
         } else {
             return sInstance.getBooleanInternal(key, defaultValue);
