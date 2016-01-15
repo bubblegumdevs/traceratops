@@ -22,6 +22,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.bubblegum.traceratops.app.model.LogEntry;
@@ -50,12 +51,19 @@ public class LogDbHelper extends SQLiteOpenHelper {
         onCreate(sqLiteDatabase);
     }
 
-    public void insertInDb(long timestamp, int level, String tag, String description) {
+    public void insertInDb(@NonNull long timestamp, @NonNull int level, String tag, String description, String stacktrace) {
         ContentValues contentValues = new ContentValues();
         contentValues.put(LogContract.LogSchema.COLUMN_TIMESTAMP, timestamp);
         contentValues.put(LogContract.LogSchema.COLUMN_LEVEL, level);
-        contentValues.put(LogContract.LogSchema.COLUMN_TAG, tag);
-        contentValues.put(LogContract.LogSchema.COLUMN_DESCRIPTION, description);
+        if (tag != null) {
+            contentValues.put(LogContract.LogSchema.COLUMN_TAG, tag);
+        }
+        if (description != null) {
+            contentValues.put(LogContract.LogSchema.COLUMN_DESCRIPTION, description);
+        }
+        if (stacktrace != null) {
+            contentValues.put(LogContract.LogSchema.COLUMN_STACKTRACE, stacktrace);
+        }
 
         SQLiteDatabase db = getWritableDatabase();
         db.insert(LogContract.LogSchema.TABLE_NAME, null, contentValues);
@@ -85,12 +93,14 @@ public class LogDbHelper extends SQLiteOpenHelper {
                 int level = cursor.getInt(cursor.getColumnIndex(LogContract.LogSchema.COLUMN_LEVEL));
                 String tag = cursor.getString(cursor.getColumnIndex(LogContract.LogSchema.COLUMN_TAG));
                 String desc = cursor.getString(cursor.getColumnIndex(LogContract.LogSchema.COLUMN_DESCRIPTION));
+                String stacktrace = cursor.getString(cursor.getColumnIndex(LogContract.LogSchema.COLUMN_STACKTRACE));
 
                 LogEntry logEntry = new LogEntry();
                 logEntry.timestamp = timestamp;
                 logEntry.level = level;
                 logEntry.tag = tag;
                 logEntry.description = desc;
+                logEntry.stackTrace = stacktrace;
 
                 allLogs.add(logEntry);
             } while (cursor.moveToNext());

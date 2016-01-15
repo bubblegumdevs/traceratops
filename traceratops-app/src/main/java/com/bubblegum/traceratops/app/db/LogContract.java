@@ -30,11 +30,13 @@ public class LogContract {
         public static final String COLUMN_TAG = "tag";
         public static final String COLUMN_LEVEL = "level";
         public static final String COLUMN_DESCRIPTION = "description";
+        public static final String COLUMN_STACKTRACE = "stacktrace";
     }
 
     private static final String TEXT_TYPE = " TEXT";
     private static final String INTEGER_TYPE = " INTEGER";
     private static final String COMMA_SEP = ",";
+    private static final String NOT_NULL = "NOTNULL"
 
     /**
      * Create table for log_entry
@@ -42,10 +44,11 @@ public class LogContract {
     public static final String SQL_CREATE_LOG_ENTRIES =
             "CREATE TABLE " + LogSchema.TABLE_NAME + " (" +
                     LogSchema._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    LogSchema.COLUMN_TIMESTAMP + INTEGER_TYPE + COMMA_SEP +
+                    LogSchema.COLUMN_TIMESTAMP + INTEGER_TYPE + NOT_NULL + COMMA_SEP +
                     LogSchema.COLUMN_TAG + TEXT_TYPE + COMMA_SEP +
-                    LogSchema.COLUMN_LEVEL + INTEGER_TYPE + COMMA_SEP +
+                    LogSchema.COLUMN_LEVEL + INTEGER_TYPE + NOT_NULL + COMMA_SEP +
                     LogSchema.COLUMN_DESCRIPTION + TEXT_TYPE +
+                    LogSchema.COLUMN_STACKTRACE + TEXT_TYPE +
                     " )";
 
     /**
