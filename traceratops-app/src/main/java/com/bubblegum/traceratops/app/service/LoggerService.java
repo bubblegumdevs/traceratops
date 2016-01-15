@@ -20,6 +20,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 
 import com.bubblegum.traceratops.ILoggerService;
@@ -45,6 +46,16 @@ public class LoggerService extends Service {
         @Override
         public void log(String tag, String message, String stackTrace, int level) throws RemoteException {
             queueLogTask(tag, message, stackTrace, level);
+        }
+
+        @Override
+        public String getString(String key, String defaultValue) throws RemoteException {
+            return PreferenceManager.getDefaultSharedPreferences(LoggerService.this).getString(key, defaultValue);
+        }
+
+        @Override
+        public boolean getBoolean(String key, boolean defaultValue) throws RemoteException {
+            return PreferenceManager.getDefaultSharedPreferences(LoggerService.this).getBoolean(key, defaultValue);
         }
     };
 

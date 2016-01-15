@@ -20,26 +20,38 @@ package com.bubblegum.traceratops.demo.ui;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.bubblegum.traceratops.demo.R;
+import com.bubblegum.traceratops.sdk.client.Debug;
 import com.bubblegum.traceratops.sdk.client.Log;
 
 public class MainActivity extends AppCompatActivity {
 
     private static String TAG = "bubblegum_mainactivity";
 
+    private static final String DEFAULT_SIMPLE_DEBUG_STRING = "This is the default simple debug String";
+
+    public static final class DebugKeys {
+        public static final String DEBUG_KEY_SIMPLE_DEBUG_STRING = ":simpleDebugString";
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ImageView imageView = (ImageView) findViewById(R.id.image_view);
-        imageView.setOnClickListener(new View.OnClickListener() {
+        Button simpleLogButton = (Button) findViewById(R.id.simple_log_button);
+        simpleLogButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d(TAG, "Click on image view");
+                Log.d(TAG, "Simple log event triggered");
             }
         });
+
+        TextView simpleDebugString = (TextView) findViewById(R.id.simple_debug_string);
+        simpleDebugString.setText(Debug.getString(DebugKeys.DEBUG_KEY_SIMPLE_DEBUG_STRING, DEFAULT_SIMPLE_DEBUG_STRING));
     }
 }

@@ -248,6 +248,7 @@ public final class Log implements ServiceConnection {
                 }
                 return;
             }
+            Debug.sInstance = new Debug(mLoggerService);
         }
         if(mLoggerServiceConnectionCallbacks!=null) {
             mLoggerServiceConnectionCallbacks.onLoggerServiceConnected();
@@ -287,7 +288,7 @@ public final class Log implements ServiceConnection {
         return mIsSafe && mShouldLog && mLoggerService!=null;
     }
 
-    private static void warnNotLogging() {
+    static void warnNotLogging() {
         // TODO Write something suitable for this
     }
 

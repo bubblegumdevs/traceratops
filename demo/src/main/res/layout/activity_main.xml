@@ -16,16 +16,26 @@
   ~ limitations under the License.
   -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp">
 
-    <ImageView
-        android:id="@+id/image_view"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
+    <Button
+        android:id="@+id/simple_log_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_marginTop="16dp"
         android:layout_centerInParent="true"
+        android:text="Click here to trigger log event"
         android:background="@color/colorPrimary"/>
 
-</RelativeLayout>
+    <TextView
+        android:id="@+id/simple_debug_string"
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:text="Simple debug string"
+        android:gravity="center"/>
+
+</LinearLayout>
