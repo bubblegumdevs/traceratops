@@ -19,11 +19,14 @@ package com.bubblegum.traceratops.app.ui.adapters.plugins;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.text.format.DateUtils;
+import android.view.View;
 
 import com.bubblegum.traceratops.app.model.BaseEntry;
 import com.bubblegum.traceratops.app.ui.adapters.BaseEntryAdapter;
 
 public abstract class AbsAdapterPlugin<T extends BaseEntry> {
+
+    Context context;
 
     public abstract Class<T> getSupportedClass();
 
@@ -31,15 +34,27 @@ public abstract class AbsAdapterPlugin<T extends BaseEntry> {
     public abstract String getSecondaryText(T entry);
     public abstract long getTimestamp(T entry);
     public abstract Drawable getImageDrawable(T entry);
+    public abstract void onItemClick(T entry);
 
     @SuppressWarnings("unchecked") // We already check the class in BaseEntryAdapter
-    public void bind(Context context, BaseEntry entry, BaseEntryAdapter.EntryViewHolder holder) {
+    public void bind(Context context, final BaseEntry entry, BaseEntryAdapter.EntryViewHolder holder) {
+        this.context = context;
         if(entry.getClass() == getSupportedClass()) {
             holder.vhPrimaryText.setText(getPrimaryText((T) entry));
             holder.vhSecondaryText.setText(getSecondaryText((T) entry));
             holder.vhTimestampText.setText(systemTimeInMillisToSystemDateFormat(context, getTimestamp((T) entry)));
             holder.vhIcon.setImageDrawable(getImageDrawable((T) entry));
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onItemClick((T) entry);
+                }
+            });
         }
+    }
+
+    protected Context getContext() {
+        return context;
     }
 
     private String systemTimeInMillisToSystemDateFormat(Context context, long millis) {

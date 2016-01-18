@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-package com.bubblegum.traceratops;
+package com.bubblegum.traceratops.demo.dummy;
 
-interface ILoggerService {
+import com.bubblegum.traceratops.sdk.client.annotations.TLogEntry;
 
-    void log(String tag, String message, String stackTrace, int level);
-    void tlog(String tag, String message, in Bundle args, int level);
-    String getString(String tag, String defaultValue);
-    boolean getBoolean(String tag, boolean defaultValue);
+public class TLogDemoObject {
+
+    @TLogEntry("name")
+    private String name = "Girish";
+    private String password = "Hidden";
+    @TLogEntry("ID number")
+    private int id = 73;
 
 }

@@ -59,6 +59,7 @@ public class Traceratops implements ServiceConnection {
             }
             Debug.sInstance = new Debug(mLoggerService);
             Log.sInstance.setLoggerService(mLoggerService);
+            TLog.sInstance = new TLog();
         }
         if(mLoggerServiceConnectionCallbacks!=null) {
             mLoggerServiceConnectionCallbacks.onLoggerServiceConnected();

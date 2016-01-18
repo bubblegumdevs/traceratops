@@ -18,6 +18,7 @@ package com.bubblegum.traceratops.app.service;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
@@ -26,6 +27,7 @@ import android.support.annotation.Nullable;
 import com.bubblegum.traceratops.ILoggerService;
 import com.bubblegum.traceratops.app.TraceratopsApplication;
 import com.bubblegum.traceratops.app.model.LogEntry;
+import com.bubblegum.traceratops.app.model.TLogEntry;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -49,6 +51,11 @@ public class LoggerService extends Service {
         }
 
         @Override
+        public void tlog(String tag, String message, Bundle args, int level) throws RemoteException {
+            queueTLogTask(tag, message, args, level);
+        }
+
+        @Override
         public String getString(String key, String defaultValue) throws RemoteException {
             return PreferenceManager.getDefaultSharedPreferences(LoggerService.this).getString(key, defaultValue);
         }
@@ -58,6 +65,10 @@ public class LoggerService extends Service {
             return PreferenceManager.getDefaultSharedPreferences(LoggerService.this).getBoolean(key, defaultValue);
         }
     };
+
+    private void queueTLogTask(String tag, String message, Bundle bundle, int level) {
+        mExecutorService.submit(new TLogTask(tag, message, bundle, level, System.currentTimeMillis()));
+    }
 
     private void queueLogTask(String tag, String message, String stackTrace, int level) {
         mExecutorService.submit(new LogTask(tag, message, stackTrace, level, System.currentTimeMillis()));
@@ -73,6 +84,26 @@ public class LoggerService extends Service {
             logEntry.description = message;
             logEntry.level = level;
             logEntry.stackTrace = stackTrace;
+            logEntry.timestamp = timestamp;
+        }
+
+        @Override
+        public void run() {
+            TraceratopsApplication.from(getApplication()).addEntry(logEntry);
+            // TODO add database insertion code
+        }
+    }
+
+    private class TLogTask implements Runnable {
+
+        final TLogEntry logEntry;
+
+        public TLogTask(String tag, String message, Bundle args, int level, long timestamp) {
+            logEntry = new TLogEntry();
+            logEntry.tag = tag;
+            logEntry.description = message;
+            logEntry.level = level;
+            logEntry.args = args;
             logEntry.timestamp = timestamp;
         }
 

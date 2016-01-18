@@ -25,8 +25,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bubblegum.traceratops.demo.R;
+import com.bubblegum.traceratops.demo.dummy.TLogDemoObject;
 import com.bubblegum.traceratops.sdk.client.Debug;
 import com.bubblegum.traceratops.sdk.client.Log;
+import com.bubblegum.traceratops.sdk.client.TLog;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -48,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.d(TAG, "Simple log event triggered");
+                TLogDemoObject tLogDemoObject = new TLogDemoObject();
+                TLog.d(TAG, "Simple TLog object", tLogDemoObject);
             }
         });
 

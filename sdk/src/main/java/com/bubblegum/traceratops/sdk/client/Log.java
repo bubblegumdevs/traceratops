@@ -16,13 +16,16 @@
 
 package com.bubblegum.traceratops.sdk.client;
 
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.bubblegum.traceratops.ILoggerService;
+import com.bubblegum.traceratops.sdk.client.annotations.TLogEntry;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 
 public final class Log {
 
@@ -204,7 +207,7 @@ public final class Log {
         }
     }
 
-    private void logInternal(String tag, String message, @Nullable Throwable throwable, int level) {
+    void logInternal(String tag, String message, @Nullable Object supplementObject, int level) {
         if(!isLogging()) {
             if(mShouldLog) {
                 Traceratops.sInstance.attemptConnection();
@@ -214,11 +217,20 @@ public final class Log {
         }
         try {
             if (mLoggerService != null) {
-                String errorMessage = "";
-                if(throwable!=null) {
-                    errorMessage = getStackTraceAsString(throwable);
+                if(supplementObject == null || supplementObject instanceof Throwable) {
+                    String errorMessage = "";
+                    if (supplementObject != null) {
+                        errorMessage = getStackTraceAsString((Throwable) supplementObject);
+                    }
+                    mLoggerService.log(tag, message, errorMessage, level);
+                } else {
+                    Bundle inBundle = processForTLogEntries(supplementObject);
+                    if(inBundle!=null) {
+                        mLoggerService.tlog(tag, message, inBundle, level);
+                    } else {
+                        mLoggerService.log(tag, message, supplementObject.toString(), level);
+                    }
                 }
-                mLoggerService.log(tag, message, errorMessage, level);
             }
         } catch (Throwable t) {
             if(Traceratops.sInstance.mLoggerServiceConnectionCallbacks !=null) {
@@ -240,5 +252,24 @@ public final class Log {
         StringWriter sw = new StringWriter();
         t.printStackTrace(new PrintWriter(sw));
         return sw.toString();
+    }
+
+    private Bundle processForTLogEntries(Object object) {
+        Field []fields = object.getClass().getDeclaredFields();
+        Bundle args = null;
+        for(Field f : fields) {
+            if(f.isAnnotationPresent(TLogEntry.class)) {
+                try {
+                    f.setAccessible(true);
+                    String value = f.get(object).toString();
+                    if (args == null) {
+                        args = new Bundle();
+                    }
+                    args.putString(f.getAnnotation(TLogEntry.class).value(), value);
+                } catch (IllegalAccessException ignored) {
+                }
+            }
+        }
+        return args;
     }
 }

@@ -16,39 +16,42 @@
 
 package com.bubblegum.traceratops.app.ui.adapters.plugins;
 
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 
-import com.bubblegum.traceratops.app.model.BaseEntry;
+import com.bubblegum.traceratops.app.model.TLogEntry;
+import com.bubblegum.traceratops.app.ui.activities.ObjectDetailsActivity;
 
-public class GenericAdapterPlugin extends AbsAdapterPlugin<BaseEntry> {
-
+public class TLogAdapterPlugin extends AbsAdapterPlugin<TLogEntry> {
     @Override
-    public Class<BaseEntry> getSupportedClass() {
-        return BaseEntry.class;
+    public Class<TLogEntry> getSupportedClass() {
+        return TLogEntry.class;
     }
 
     @Override
-    public String getPrimaryText(BaseEntry entry) {
-        return "(empty entry)";
+    public String getPrimaryText(TLogEntry entry) {
+        return entry.description;
     }
 
     @Override
-    public String getSecondaryText(BaseEntry entry) {
-        return "Traceratops";
+    public String getSecondaryText(TLogEntry entry) {
+        return entry.tag + " (contains " + entry.args.size() + " objects)";
     }
 
     @Override
-    public long getTimestamp(BaseEntry entry) {
+    public long getTimestamp(TLogEntry entry) {
         return entry.timestamp;
     }
 
     @Override
-    public Drawable getImageDrawable(BaseEntry entry) {
+    public Drawable getImageDrawable(TLogEntry entry) {
         return null;
     }
 
     @Override
-    public void onItemClick(BaseEntry entry) {
-
+    public void onItemClick(TLogEntry entry) {
+        Intent intent = new Intent(getContext(), ObjectDetailsActivity.class);
+        intent.putExtra(ObjectDetailsActivity.EXTRA_TLOG_OBJECT, entry.args);
+        getContext().startActivity(intent);
     }
 }

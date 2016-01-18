@@ -25,6 +25,8 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".ui.activities.ObjectDetailsActivity" />
+
     </application>
 
 </manifest>

@@ -29,12 +29,12 @@ public class LogAdapterPlugin extends AbsAdapterPlugin<LogEntry> {
 
     @Override
     public String getPrimaryText(LogEntry entry) {
-        return entry.tag;
+        return entry.description;
     }
 
     @Override
     public String getSecondaryText(LogEntry entry) {
-        return entry.description;
+        return entry.tag;
     }
 
     @Override
@@ -45,5 +45,10 @@ public class LogAdapterPlugin extends AbsAdapterPlugin<LogEntry> {
     @Override
     public Drawable getImageDrawable(LogEntry entry) {
         return null;
+    }
+
+    @Override
+    public void onItemClick(LogEntry entry) {
+
     }
 }

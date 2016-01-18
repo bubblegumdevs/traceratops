@@ -51,9 +51,11 @@ public class BaseEntryAdapter extends RecyclerView.Adapter {
         public TextView vhSecondaryText;
         public TextView vhTimestampText;
         public ImageView vhIcon;
+        public View itemView;
 
         public EntryViewHolder(View itemView) {
             super(itemView);
+            this.itemView = itemView;
             vhPrimaryText = (TextView) itemView.findViewById(R.id.row_item_primary_text);
             vhSecondaryText = (TextView) itemView.findViewById(R.id.row_item_secondary_text);
             vhTimestampText = (TextView) itemView.findViewById(R.id.row_item_timestamp_text);

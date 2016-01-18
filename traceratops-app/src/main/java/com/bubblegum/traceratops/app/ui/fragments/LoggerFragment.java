@@ -29,6 +29,7 @@ import com.bubblegum.traceratops.app.TraceratopsApplication;
 import com.bubblegum.traceratops.app.model.BaseEntry;
 import com.bubblegum.traceratops.app.ui.adapters.BaseEntryAdapter;
 import com.bubblegum.traceratops.app.ui.adapters.plugins.LogAdapterPlugin;
+import com.bubblegum.traceratops.app.ui.adapters.plugins.TLogAdapterPlugin;
 
 import java.util.List;
 
@@ -47,7 +48,8 @@ public class LoggerFragment extends BaseFragment implements TraceratopsApplicati
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         mRecyclerView = (RecyclerView) view.findViewById(R.id.logger_recycler_view);
         mEntryAdapter = new BaseEntryAdapter(getContext(), TraceratopsApplication.from(getActivity()).getEntries());
-        mEntryAdapter.addAdapterPlugin(new LogAdapterPlugin());
+        mEntryAdapter.addAdapterPlugin(new LogAdapterPlugin())
+        .addAdapterPlugin(new TLogAdapterPlugin());
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(llm);

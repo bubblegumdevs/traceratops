@@ -71,4 +71,8 @@ public class Debug {
         }
     }
 
+    private boolean isLogging() {
+        return Traceratops.sInstance.mIsSafe && mLoggerService!=null;
+    }
+
 }

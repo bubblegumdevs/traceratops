@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package com.bubblegum.traceratops;
+package com.bubblegum.traceratops.sdk.client.annotations;
 
-interface ILoggerService {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    void log(String tag, String message, String stackTrace, int level);
-    void tlog(String tag, String message, in Bundle args, int level);
-    String getString(String tag, String defaultValue);
-    boolean getBoolean(String tag, boolean defaultValue);
-
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface TLogEntry {
+    String value() default "";
 }

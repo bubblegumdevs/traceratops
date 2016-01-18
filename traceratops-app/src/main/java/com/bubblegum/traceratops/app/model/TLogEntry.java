@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-package com.bubblegum.traceratops;
+package com.bubblegum.traceratops.app.model;
 
-interface ILoggerService {
+import android.os.Bundle;
 
-    void log(String tag, String message, String stackTrace, int level);
-    void tlog(String tag, String message, in Bundle args, int level);
-    String getString(String tag, String defaultValue);
-    boolean getBoolean(String tag, boolean defaultValue);
-
+public class TLogEntry extends LogEntry {
+    public Bundle args;
 }
