@@ -46,6 +46,13 @@ public class DemoApplication extends Application {
                 })
                 .withLogProxy(LogProxies.EMPTY_LOG_PROXY)
                 .shouldLog(true)
+                .handleCrashes(this)
                 .connect();
+    }
+
+    /** For testing: Induces a crash */
+    private void induceCrash() {
+        String myString = null;
+        myString.getBytes();
     }
 }

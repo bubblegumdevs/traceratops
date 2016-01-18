@@ -17,6 +17,7 @@
 
 package com.bubblegum.traceratops.sdk.client;
 
+import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -33,6 +34,7 @@ import java.lang.ref.WeakReference;
 public class Traceratops implements ServiceConnection {
 
     boolean mIsSafe = false;
+    private static final String TAG = "bubblegum_traceratops";
 
     private boolean mHasWarnedNotLogging = false;
 
@@ -128,6 +130,24 @@ public class Traceratops implements ServiceConnection {
 
         public Builder shouldLog(boolean shouldLog) {
             mLogInstance.setShouldLog(shouldLog);
+            return this;
+        }
+
+        public Builder handleCrashes(final Application application) {
+            final Thread.UncaughtExceptionHandler oldHandler = Thread.getDefaultUncaughtExceptionHandler();
+
+            Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                @Override
+                public void uncaughtException(Thread thread, Throwable ex) {
+                    android.util.Log.e(TAG, "Traceratops has detected an uncaught exception B-) --> " + ex.getMessage().toString());
+                    Log.wtf(application.getPackageName(), thread.getName(), ex);
+
+                    //Call the older uncaught exception handler
+                    if (oldHandler != null) {
+                        oldHandler.uncaughtException(thread, ex);
+                    }
+                }
+            });
             return this;
         }
 
