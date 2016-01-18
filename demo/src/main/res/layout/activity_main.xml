@@ -31,6 +31,16 @@
         android:text="Click here to trigger log event"
         android:background="@color/colorPrimary"/>
 
+    <Button
+        android:id="@+id/simulate_crash_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="16dp"
+        android:layout_centerInParent="true"
+        android:text="Click here to trigger crash"
+        android:background="@color/colorPrimary"/>
+
     <TextView
         android:id="@+id/simple_debug_string"
         android:layout_width="match_parent"

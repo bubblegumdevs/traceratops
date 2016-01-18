@@ -49,10 +49,4 @@ public class DemoApplication extends Application {
                 .handleCrashes(this)
                 .connect();
     }
-
-    /** For testing: Induces a crash */
-    private void induceCrash() {
-        String myString = null;
-        myString.getBytes();
-    }
 }

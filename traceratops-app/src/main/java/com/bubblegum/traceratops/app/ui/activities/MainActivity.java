@@ -54,8 +54,8 @@ public class MainActivity extends BaseActivity {
 
         DebugFragment debugFragment = new DebugFragment();
         LoggerFragment loggerFragment = new LoggerFragment();
-        adapter.addFragment(debugFragment);
-        adapter.addFragment(loggerFragment);
+        adapter.addFragment(debugFragment, getString(R.string.debug_fragment_title));
+        adapter.addFragment(loggerFragment, getString(R.string.logger_fragment_title));
 
         viewPager.setAdapter(adapter);
     }
@@ -63,13 +63,15 @@ public class MainActivity extends BaseActivity {
     private class TraceratopsAppViewPagerFragmentAdapter extends FragmentPagerAdapter {
 
         private ArrayList<Fragment> fragments = new ArrayList<>();
+        private ArrayList<String> fragmentTitles = new ArrayList<>();
 
         public TraceratopsAppViewPagerFragmentAdapter(FragmentManager fm) {
             super(fm);
         }
 
-        public void addFragment(@NonNull Fragment fragment) {
+        public void addFragment(@NonNull Fragment fragment, @NonNull String title) {
             fragments.add(fragment);
+            fragmentTitles.add(title);
         }
 
         @Override
@@ -78,6 +80,14 @@ public class MainActivity extends BaseActivity {
                 return fragments.get(position);
             }
             return null;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            if (position >= 0 && position < fragmentTitles.size()) {
+                return fragmentTitles.get(position);
+            }
+            return super.getPageTitle(position);
         }
 
         @Override

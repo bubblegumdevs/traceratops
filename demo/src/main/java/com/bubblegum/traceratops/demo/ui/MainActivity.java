@@ -51,7 +51,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        Button crashButton = (Button) findViewById(R.id.simulate_crash_button);
+        crashButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                induceCrash();
+            }
+        });
+
         TextView simpleDebugString = (TextView) findViewById(R.id.simple_debug_string);
         simpleDebugString.setText(Debug.getString(DebugKeys.DEBUG_KEY_SIMPLE_DEBUG_STRING, DEFAULT_SIMPLE_DEBUG_STRING));
+    }
+
+    /** For testing: Induces a crash */
+    private void induceCrash() {
+        String myString = null;
+        myString.getBytes();
     }
 }
