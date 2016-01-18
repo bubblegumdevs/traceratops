@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright 2015 Bubblegum Developers
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,20 +14,39 @@
   ~ limitations under the License.
   -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <!-- TODO: Need to write Toolbar implementation-->
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"/>
+
+        <android.support.design.widget.TabLayout
+            android:id="@+id/tab_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </android.support.design.widget.AppBarLayout>
 
     <!-- TODO: Need to add navigation drawer -->
 
     <!-- TODO: Need to remove static fragment tag -->
 
-    <fragment
+    <android.support.v4.view.ViewPager
+        android:id="@+id/view_pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        class="com.bubblegum.traceratops.app.ui.fragments.DebugFragment"
-        android:id="@+id/fragment_temp_should_remove_soon" />
+        android:layout_height="match_parent"/>
 
-</FrameLayout>
+    <!--<fragment-->
+        <!--android:id="@+id/fragment_temp_should_remove_soon"-->
+        <!--class="com.bubblegum.traceratops.app.ui.fragments.DebugFragment"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent" />-->
+
+</android.support.design.widget.CoordinatorLayout>

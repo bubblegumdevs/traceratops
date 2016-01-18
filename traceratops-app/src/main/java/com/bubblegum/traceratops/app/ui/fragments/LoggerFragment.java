@@ -40,7 +40,7 @@ public class LoggerFragment extends BaseFragment implements TraceratopsApplicati
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return LayoutInflater.from(getContext()).inflate(R.layout.fragment_logger, container, true);
+        return LayoutInflater.from(getContext()).inflate(R.layout.fragment_logger, container, false);
     }
 
     @Override

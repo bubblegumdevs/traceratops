@@ -17,8 +17,19 @@
 package com.bubblegum.traceratops.app.ui.activities;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.widget.Toolbar;
 
 import com.bubblegum.traceratops.app.R;
+import com.bubblegum.traceratops.app.ui.fragments.DebugFragment;
+import com.bubblegum.traceratops.app.ui.fragments.LoggerFragment;
+
+import java.util.ArrayList;
 
 public class MainActivity extends BaseActivity {
 
@@ -26,5 +37,52 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
+        ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+
+        setupViewPager(viewPager);
+        tabLayout.setupWithViewPager(viewPager);
+    }
+
+    private void setupViewPager(ViewPager viewPager) {
+        FragmentManager fm = getSupportFragmentManager();
+        TraceratopsAppViewPagerFragmentAdapter adapter = new TraceratopsAppViewPagerFragmentAdapter(fm);
+
+        DebugFragment debugFragment = new DebugFragment();
+        LoggerFragment loggerFragment = new LoggerFragment();
+        adapter.addFragment(debugFragment);
+        adapter.addFragment(loggerFragment);
+
+        viewPager.setAdapter(adapter);
+    }
+
+    private class TraceratopsAppViewPagerFragmentAdapter extends FragmentPagerAdapter {
+
+        private ArrayList<Fragment> fragments = new ArrayList<>();
+
+        public TraceratopsAppViewPagerFragmentAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        public void addFragment(@NonNull Fragment fragment) {
+            fragments.add(fragment);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            if (position >= 0 && position < fragments.size()) {
+                return fragments.get(position);
+            }
+            return null;
+        }
+
+        @Override
+        public int getCount() {
+            return fragments.size();
+        }
     }
 }
