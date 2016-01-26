@@ -88,7 +88,7 @@ public class LoggerService extends Service {
     }
 
     private void queueCrash(String stacktrace, String message) {
-        mExecutorService.submit(new CrashTask(message, stacktrace));
+        mExecutorService.submit(new CrashTask(message, stacktrace, System.currentTimeMillis()));
 
         /* Crash notification:
          * Clicking on this notification should take the user directly to that particular crash page
@@ -129,10 +129,11 @@ public class LoggerService extends Service {
 
         final CrashEntry crashEntry;
 
-        public CrashTask(String message, String stacktrace) {
+        public CrashTask(String message, String stacktrace, long timestamp) {
             crashEntry = new CrashEntry();
             crashEntry.message = message;
             crashEntry.stacktrace = stacktrace;
+            crashEntry.timestamp = timestamp;
         }
 
         @Override

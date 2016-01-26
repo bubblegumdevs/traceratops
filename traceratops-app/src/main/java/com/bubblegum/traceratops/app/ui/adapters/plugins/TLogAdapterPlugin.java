@@ -18,11 +18,22 @@ package com.bubblegum.traceratops.app.ui.adapters.plugins;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 
+import com.bubblegum.traceratops.app.R;
 import com.bubblegum.traceratops.app.model.TLogEntry;
 import com.bubblegum.traceratops.app.ui.activities.ObjectDetailsActivity;
+import com.bubblegum.traceratops.app.ui.utils.CircularTextDrawable;
 
 public class TLogAdapterPlugin extends AbsAdapterPlugin<TLogEntry> {
+
+    private static final int V = 2;
+    private static final int D = 3;
+    private static final int I = 4;
+    private static final int W = 5;
+    private static final int E = 6;
+    private static final int WTF = 7;
+
     @Override
     public Class<TLogEntry> getSupportedClass() {
         return TLogEntry.class;
@@ -35,7 +46,7 @@ public class TLogAdapterPlugin extends AbsAdapterPlugin<TLogEntry> {
 
     @Override
     public String getSecondaryText(TLogEntry entry) {
-        return entry.tag + " (contains " + entry.args.size() + " objects)";
+        return entry.tag;
     }
 
     @Override
@@ -45,13 +56,37 @@ public class TLogAdapterPlugin extends AbsAdapterPlugin<TLogEntry> {
 
     @Override
     public Drawable getImageDrawable(TLogEntry entry) {
-        return null;
+        return new CircularTextDrawable(String.valueOf(entry.args.size()), getColorForLevel(entry.level));
     }
 
     @Override
     public void onItemClick(TLogEntry entry) {
         Intent intent = new Intent(getContext(), ObjectDetailsActivity.class);
         intent.putExtra(ObjectDetailsActivity.EXTRA_TLOG_OBJECT, entry.args);
+        intent.putExtra(ObjectDetailsActivity.EXTRA_TLOG_TAG, entry.tag);
+        intent.putExtra(ObjectDetailsActivity.EXTRA_TLOG_DESCRIPTION, entry.description);
         getContext().startActivity(intent);
+    }
+
+    private int getColorForLevel(int level) {
+        switch (level) {
+            case V:
+                return getColor(R.color.logLevelVerbose);
+            case D:
+                return getColor(R.color.logLevelDebug);
+            case I:
+                return getColor(R.color.logLevelInfo);
+            case E:
+                return getColor(R.color.logLevelError);
+            case W:
+                return getColor(R.color.logLevelWarning);
+            case WTF:
+                return getColor(R.color.logLevelWTF);
+        }
+        return getColor(R.color.logLevelDebug);
+    }
+
+    private int getColor(int color) {
+        return ContextCompat.getColor(getContext(), color);
     }
 }

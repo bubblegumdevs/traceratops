@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">Traceratops App</string>
+    <string name="app_name">Traceratops</string>
+
+    <string name="dash_board">Traceratops Dashboard</string>
 
     <!-- Fragment titles -->
     <string name="debug_fragment_title">Debug</string>

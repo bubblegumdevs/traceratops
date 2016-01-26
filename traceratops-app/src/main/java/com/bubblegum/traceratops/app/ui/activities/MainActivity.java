@@ -46,6 +46,8 @@ public class MainActivity extends BaseActivity {
 
         setupViewPager(viewPager);
         tabLayout.setupWithViewPager(viewPager);
+
+        getSupportActionBar().setTitle(getString(R.string.dash_board));
     }
 
     private void setupViewPager(ViewPager viewPager) {
