@@ -25,51 +25,75 @@ public class TLog {
     }
     
     public static void v(String tag, String message, Object object) {
-        sInstance.vInternal(tag, message, object);
+        if(sInstance!=null) {
+            sInstance.vInternal(tag, message, object);
+        } else {
+            Traceratops.warnNotLogging();
+        }
     }
 
     public static void d(String tag, String message, Object object) {
-        sInstance.dInternal(tag, message, object);
+        if(sInstance!=null) {
+            sInstance.dInternal(tag, message, object);
+        } else {
+            Traceratops.warnNotLogging();
+        }
     }
 
     public static void w(String tag, String message, Object object) {
-        sInstance.wInternal(tag, message, object);
+        if(sInstance!=null) {
+            sInstance.wInternal(tag, message, object);
+        } else {
+            Traceratops.warnNotLogging();
+        }
     }
 
     public static void e(String tag, String message, Object object) {
-        sInstance.eInternal(tag, message, object);
+        if(sInstance!=null) {
+            sInstance.eInternal(tag, message, object);
+        } else {
+            Traceratops.warnNotLogging();
+        }
     }
 
     public static void i(String tag, String message, Object object) {
-        sInstance.iInternal(tag, message, object);
+        if(sInstance!=null) {
+            sInstance.iInternal(tag, message, object);
+        } else {
+            Traceratops.warnNotLogging();
+        }
     }
 
     public static void wtf(String tag, String message, Object object) {
-        sInstance.wtfInternal(tag, message, object);
+        if(sInstance!=null) {
+            sInstance.wtfInternal(tag, message, object);
+        } else {
+            Traceratops.warnNotLogging();
+        }
     }
     
     private void dInternal(String tag, String message, Object object) {
-        Log.sInstance.logInternal(tag, message, object, LogProxy.D);
+        Log.sInstance.logInternalAsync(tag, message, object, LogProxy.D);
     }
     
     private void eInternal(String tag, String message, Object object) {
-        Log.sInstance.logInternal(tag, message, object, LogProxy.E);
+        Log.sInstance.logInternalAsync(tag, message, object, LogProxy.E);
     }
 
     private void iInternal(String tag, String message, Object object) {
-        Log.sInstance.logInternal(tag, message, object, LogProxy.I);
+        Log.sInstance.logInternalAsync(tag, message, object, LogProxy.I);
     }
 
     private void vInternal(String tag, String message, Object object) {
-        Log.sInstance.logInternal(tag, message, object, LogProxy.V);
+        Log.sInstance.logInternalAsync(tag, message, object, LogProxy.V);
     }
 
     private void wInternal(String tag, String message, Object object) {
-        Log.sInstance.logInternal(tag, message, object, LogProxy.W);
+        Log.sInstance.logInternalAsync(tag, message, object, LogProxy.W);
     }
 
     private void wtfInternal(String tag, String message, Object object) {
-        Log.sInstance.logInternal(tag, message, object, LogProxy.WTF);
+        Log.sInstance.logInternalAsync(tag, message, object, LogProxy.WTF);
     }
     
 }
