@@ -27,7 +27,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
-import android.support.v7.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat;
 
 import com.bubblegum.traceratops.ILoggerService;
 import com.bubblegum.traceratops.app.R;
@@ -48,7 +48,14 @@ public class LoggerService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        showPersistentNotification();
         return mBinder;
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        hidePersistentNotification();
+        return super.onUnbind(intent);
     }
 
     private IBinder mBinder = new ILoggerService.Stub() {
@@ -95,14 +102,17 @@ public class LoggerService extends Service {
          */
         NotificationManager notifMan = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, R.id.traceratops_crash_pending_intent, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setSmallIcon(R.drawable.ic_notif_default)
-                .setContentTitle("A new crash has been logged")
+                .setContentTitle(getString(R.string.crash_notification_title))
+                .setContentText(getString(R.string.crash_notification_text))
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setCategory(NotificationCompat.CATEGORY_ERROR)
                 .setAutoCancel(true)
                 .setContentIntent(contentIntent);
-        notifMan.notify(0, builder.build());
+        notifMan.notify(R.id.traceratops_crash_id, builder.build());
     }
 
     private class LogTask implements Runnable {
@@ -160,5 +170,25 @@ public class LoggerService extends Service {
             TraceratopsApplication.from(getApplication()).addEntry(logEntry);
             // TODO add database insertion code
         }
+    }
+
+    private void showPersistentNotification() {
+        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, R.id.traceratops_notification_pending_intent, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        Notification notification = new NotificationCompat.Builder(this)
+                .setOngoing(true)
+                .setCategory(NotificationCompat.CATEGORY_STATUS)
+                .setPriority(NotificationCompat.PRIORITY_MIN)
+                .setContentTitle(getString(R.string.persistent_notification_title))
+                .setContentText(getString(R.string.persistent_notification_text))
+                .setContentIntent(pendingIntent)
+                .setSmallIcon(R.drawable.ic_notif_default)
+                .build();
+        nm.notify(R.id.traceratops_running_id, notification);
+    }
+
+    private void hidePersistentNotification() {
+        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        nm.cancel(R.id.traceratops_running_id);
     }
 }

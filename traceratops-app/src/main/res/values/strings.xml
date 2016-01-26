@@ -6,4 +6,12 @@
     <!-- Fragment titles -->
     <string name="debug_fragment_title">Debug</string>
     <string name="logger_fragment_title">Logs</string>
+
+    <string name="persistent_notification_title">Traceratops is running</string>
+    <string name="persistent_notification_text">Listening for logs and crashes…</string>
+
+    <string name="crash_notification_title">Your app has crashed</string>
+    <string name="crash_notification_text">A new crash has been logged. Click here to view stack trace.</string>
+
+
 </resources>
