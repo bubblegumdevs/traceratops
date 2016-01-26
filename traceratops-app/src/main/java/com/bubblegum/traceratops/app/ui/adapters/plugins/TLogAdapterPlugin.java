@@ -52,6 +52,8 @@ public class TLogAdapterPlugin extends AbsAdapterPlugin<TLogEntry> {
     public void onItemClick(TLogEntry entry) {
         Intent intent = new Intent(getContext(), ObjectDetailsActivity.class);
         intent.putExtra(ObjectDetailsActivity.EXTRA_TLOG_OBJECT, entry.args);
+        intent.putExtra(ObjectDetailsActivity.EXTRA_TLOG_TAG, entry.tag);
+        intent.putExtra(ObjectDetailsActivity.EXTRA_TLOG_DESCRIPTION, entry.description);
         getContext().startActivity(intent);
     }
 }
