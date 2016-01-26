@@ -211,6 +211,10 @@ public final class Log {
         }
     }
 
+    static void crash(Throwable throwable) {
+        sInstance.crashInternalAsync(throwable);
+    }
+
     void logInternalAsync(final String tag, final String message, @Nullable final Object supplementObject, final int level) {
         mExecutorService.submit(new Runnable() {
             @Override
@@ -244,6 +248,27 @@ public final class Log {
                         mLoggerService.log(tag, message, supplementObject.toString(), level);
                     }
                 }
+            }
+        } catch (Throwable t) {
+            if(Traceratops.sInstance.mLoggerServiceConnectionCallbacks !=null) {
+                Traceratops.sInstance.mLoggerServiceConnectionCallbacks.onLoggerServiceException(t);
+            }
+        }
+    }
+
+    private void crashInternalAsync(final Throwable throwable) {
+        mExecutorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                crashInternal(getStackTraceAsString(throwable), throwable.getMessage());
+            }
+        });
+    }
+
+    private void crashInternal(String stacktrace, String message) {
+        try {
+            if (mLoggerService != null) {
+                mLoggerService.crash(stacktrace, message);
             }
         } catch (Throwable t) {
             if(Traceratops.sInstance.mLoggerServiceConnectionCallbacks !=null) {

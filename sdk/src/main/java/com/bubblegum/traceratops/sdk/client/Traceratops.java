@@ -141,7 +141,7 @@ public class Traceratops implements ServiceConnection {
                 @Override
                 public void uncaughtException(Thread thread, Throwable ex) {
                     android.util.Log.e(TAG, "Traceratops has detected an uncaught exception B-) --> " + ex.getMessage().toString());
-                    Log.wtf(application.getPackageName(), thread.getName(), ex);
+                    Log.crash(ex);
 
                     //Call the older uncaught exception handler
                     if (oldHandler != null) {

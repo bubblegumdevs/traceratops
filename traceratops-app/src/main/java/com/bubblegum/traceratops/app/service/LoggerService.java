@@ -26,6 +26,7 @@ import android.support.annotation.Nullable;
 
 import com.bubblegum.traceratops.ILoggerService;
 import com.bubblegum.traceratops.app.TraceratopsApplication;
+import com.bubblegum.traceratops.app.model.CrashEntry;
 import com.bubblegum.traceratops.app.model.LogEntry;
 import com.bubblegum.traceratops.app.model.TLogEntry;
 
@@ -64,6 +65,11 @@ public class LoggerService extends Service {
         public boolean getBoolean(String key, boolean defaultValue) throws RemoteException {
             return PreferenceManager.getDefaultSharedPreferences(LoggerService.this).getBoolean(key, defaultValue);
         }
+
+        @Override
+        public void crash(String stacktrace, String message) throws RemoteException {
+            queueCrash(stacktrace, message);
+        }
     };
 
     private void queueTLogTask(String tag, String message, Bundle bundle, int level) {
@@ -72,6 +78,10 @@ public class LoggerService extends Service {
 
     private void queueLogTask(String tag, String message, String stackTrace, int level) {
         mExecutorService.submit(new LogTask(tag, message, stackTrace, level, System.currentTimeMillis()));
+    }
+
+    private void queueCrash(String stacktrace, String message) {
+        mExecutorService.submit(new CrashTask(message, stacktrace));
     }
 
     private class LogTask implements Runnable {
@@ -91,6 +101,22 @@ public class LoggerService extends Service {
         public void run() {
             TraceratopsApplication.from(getApplication()).addEntry(logEntry);
             // TODO add database insertion code
+        }
+    }
+
+    private class CrashTask implements Runnable {
+
+        final CrashEntry crashEntry;
+
+        public CrashTask(String message, String stacktrace) {
+            crashEntry = new CrashEntry();
+            crashEntry.message = message;
+            crashEntry.stacktrace = stacktrace;
+        }
+
+        @Override
+        public void run() {
+            TraceratopsApplication.from(getApplication()).addEntry(crashEntry);
         }
     }
 
