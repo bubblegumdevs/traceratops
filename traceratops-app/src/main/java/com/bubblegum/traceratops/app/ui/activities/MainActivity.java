@@ -68,9 +68,8 @@ public class MainActivity extends BaseActivity {
 
         DebugFragment debugFragment = new DebugFragment();
         LoggerFragment loggerFragment = new LoggerFragment();
-        adapter.addFragment(debugFragment, getString(R.string.debug_fragment_title));
         adapter.addFragment(loggerFragment, getString(R.string.logger_fragment_title));
-
+        adapter.addFragment(debugFragment, getString(R.string.debug_fragment_title));
         viewPager.setAdapter(adapter);
     }
 

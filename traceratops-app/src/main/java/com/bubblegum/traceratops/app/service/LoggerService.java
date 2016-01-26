@@ -28,6 +28,7 @@ import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 
 import com.bubblegum.traceratops.ILoggerService;
 import com.bubblegum.traceratops.app.R;
@@ -109,6 +110,7 @@ public class LoggerService extends Service {
         PendingIntent contentIntent = PendingIntent.getActivity(this, R.id.traceratops_crash_pending_intent, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setSmallIcon(R.drawable.ic_notif_default)
+                .setColor(ContextCompat.getColor(this, R.color.colorPrimary))
                 .setContentTitle(getString(R.string.crash_notification_title))
                 .setContentText(getString(R.string.crash_notification_text))
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
@@ -181,6 +183,7 @@ public class LoggerService extends Service {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, R.id.traceratops_notification_pending_intent, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
         Notification notification = new NotificationCompat.Builder(this)
                 .setOngoing(true)
+                .setColor(ContextCompat.getColor(this, R.color.colorPrimary))
                 .setCategory(NotificationCompat.CATEGORY_STATUS)
                 .setPriority(NotificationCompat.PRIORITY_MIN)
                 .setContentTitle(getString(R.string.persistent_notification_title))

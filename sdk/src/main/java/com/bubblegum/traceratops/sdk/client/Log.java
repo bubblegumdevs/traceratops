@@ -164,6 +164,22 @@ public final class Log {
         }
     }
 
+    public static void i(String tag, String message) {
+        if(sInstance!=null) {
+            sInstance.iInternal(tag, message);
+        } else {
+            Traceratops.warnNotLogging();
+        }
+    }
+
+    public static void i(String tag, String message, Throwable throwable) {
+        if(sInstance!=null) {
+            sInstance.iInternal(tag, message, throwable);
+        } else {
+            Traceratops.warnNotLogging();
+        }
+    }
+
     public static void v(String tag, String message) {
         if(sInstance!=null) {
             sInstance.vInternal(tag, message);

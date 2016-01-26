@@ -54,6 +54,11 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 Log.d(TAG, "Simple log event triggered");
+                Log.w(TAG, "Warning event generated with a very long message to check wrapping of text in two lines in the dashboard");
+                Log.i(TAG, "Test for info");
+                Log.v(TAG, "Test for verbose");
+                Log.e(TAG, "Test for error");
+                Log.wtf(TAG, "Test for wtf");
                 TLogDemoObject tLogDemoObject = new TLogDemoObject();
                 TLog.d(TAG, "Simple TLog object", tLogDemoObject);
             }

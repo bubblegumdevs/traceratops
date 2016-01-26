@@ -1,19 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">#16a085</color>
+    <color name="colorPrimaryDark">#036045</color>
+    <color name="colorAccent">#f1c40f</color>
 
-    int V = 2;
-    int D = 3;
-    int I = 4;
-    int W = 5;
-    int E = 6;
-    int WTF = 7;
-
-    <color name="logLevelVerbose">#9b59b6</color>
-    <color name="logLevelDebug">#34495e</color>
-    <color name="logLevelInfo">#95a5a6</color>
+    <color name="logLevelVerbose">#7f8c8d</color>
+    <color name="logLevelDebug">#4f5e5c</color>
+    <color name="logLevelInfo">#2c3e50</color>
     <color name="logLevelWarning">#f1c40f</color>
     <color name="logLevelError">#e74c3c</color>
     <color name="logLevelWTF">#c0392b</color>
