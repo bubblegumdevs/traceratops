@@ -26,12 +26,16 @@ import com.bubblegum.traceratops.sdk.client.annotations.TLogEntry;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public final class Log {
 
     static Log sInstance;
     boolean mShouldLog;
     private ILoggerService mLoggerService;
+
+    private ExecutorService mExecutorService = Executors.newFixedThreadPool(1);
 
     LogProxy mLogProxy = LogProxies.DEFAULT_LOG_PROXY;
 
@@ -45,84 +49,84 @@ public final class Log {
     
     private boolean dInternal(String tag, String message) {
         if(mLogProxy == null || mLogProxy.d(tag, message)) {
-            logInternal(tag, message, null, LogProxy.D);
+            logInternalAsync(tag, message, null, LogProxy.D);
         }
         return true;
     }
     
     private boolean dInternal(String tag, String message, Throwable throwable) {
         if(mLogProxy == null || mLogProxy.d(tag, message, throwable)) {
-            logInternal(tag, message, throwable, LogProxy.D);
+            logInternalAsync(tag, message, throwable, LogProxy.D);
         }
         return true;
     }
     
     private boolean eInternal(String tag, String message) {
         if(mLogProxy == null || mLogProxy.e(tag, message)) {
-            logInternal(tag, message, null, LogProxy.E);
+            logInternalAsync(tag, message, null, LogProxy.E);
         }
         return true;
     }
     
     private boolean eInternal(String tag, String message, Throwable throwable) {
         if(mLogProxy == null || mLogProxy.e(tag, message, throwable)) {
-            logInternal(tag, message, throwable, LogProxy.E);
+            logInternalAsync(tag, message, throwable, LogProxy.E);
         }
         return true;
     }
 
     private boolean iInternal(String tag, String message) {
         if(mLogProxy == null || mLogProxy.e(tag, message)) {
-            logInternal(tag, message, null, LogProxy.I);
+            logInternalAsync(tag, message, null, LogProxy.I);
         }
         return true;
     }
 
     private boolean iInternal(String tag, String message, Throwable throwable) {
         if(mLogProxy == null || mLogProxy.e(tag, message, throwable)) {
-            logInternal(tag, message, throwable, LogProxy.I);
+            logInternalAsync(tag, message, throwable, LogProxy.I);
         }
         return true;
     }
     
     private boolean vInternal(String tag, String message) {
         if(mLogProxy == null || mLogProxy.v(tag, message)) {
-            logInternal(tag, message, null, LogProxy.V);
+            logInternalAsync(tag, message, null, LogProxy.V);
         }
         return true;
     }
     
     private boolean vInternal(String tag, String message, Throwable throwable) {
         if(mLogProxy == null || mLogProxy.v(tag, message, throwable)) {
-            logInternal(tag, message, throwable, LogProxy.V);
+            logInternalAsync(tag, message, throwable, LogProxy.V);
         }
         return true;
     }
     
     private boolean wInternal(String tag, String message) {
         if(mLogProxy == null || mLogProxy.w(tag, message)) {
-            logInternal(tag, message, null, LogProxy.W);
+            logInternalAsync(tag, message, null, LogProxy.W);
         }
         return true;
     }
     
     private boolean wInternal(String tag, String message, Throwable throwable) {
         if(mLogProxy == null || mLogProxy.w(tag, message, throwable)) {
-            logInternal(tag, message, throwable, LogProxy.W);
+            logInternalAsync(tag, message, throwable, LogProxy.W);
         }
         return true;
     }
 
     private boolean wtfInternal(String tag, String message) {
         if(mLogProxy == null || mLogProxy.wtf(tag, message)) {
-            logInternal(tag, message, null, LogProxy.WTF);
+            logInternalAsync(tag, message, null, LogProxy.WTF);
         }
         return true;
     }
     
     private boolean wtfInternal(String tag, String message, Throwable throwable) {
         if(mLogProxy == null || mLogProxy.wtf(tag, message, throwable)) {
-            logInternal(tag, message, throwable, LogProxy.WTF);
+            logInternalAsync(tag, message, throwable, LogProxy.WTF);
         }
         return true;
     }
@@ -207,7 +211,16 @@ public final class Log {
         }
     }
 
-    void logInternal(String tag, String message, @Nullable Object supplementObject, int level) {
+    void logInternalAsync(final String tag, final String message, @Nullable final Object supplementObject, final int level) {
+        mExecutorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                logInternal(tag, message, supplementObject, level);
+            }
+        });
+    }
+
+    private void logInternal(String tag, String message, @Nullable Object supplementObject, int level) {
         if(!isLogging()) {
             if(mShouldLog) {
                 Traceratops.sInstance.attemptConnection();
