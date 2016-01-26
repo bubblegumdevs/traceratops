@@ -35,7 +35,9 @@ import com.bubblegum.traceratops.app.TraceratopsApplication;
 import com.bubblegum.traceratops.app.model.CrashEntry;
 import com.bubblegum.traceratops.app.model.LogEntry;
 import com.bubblegum.traceratops.app.model.TLogEntry;
+import com.bubblegum.traceratops.app.ui.activities.CrashDetailsActivity;
 import com.bubblegum.traceratops.app.ui.activities.MainActivity;
+import com.bubblegum.traceratops.app.ui.fragments.CrashDetailsFragment;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -101,7 +103,9 @@ public class LoggerService extends Service {
          * Clicking on this notification should take the user directly to that particular crash page
          */
         NotificationManager notifMan = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        Intent notificationIntent = new Intent(this, MainActivity.class);
+        Intent notificationIntent = new Intent(this, CrashDetailsActivity.class);
+        notificationIntent.putExtra(CrashDetailsFragment.EXTRA_CRASH_MSG, message);
+        notificationIntent.putExtra(CrashDetailsFragment.EXTRA_CRASH_STACKTRACE, stacktrace);
         PendingIntent contentIntent = PendingIntent.getActivity(this, R.id.traceratops_crash_pending_intent, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setSmallIcon(R.drawable.ic_notif_default)

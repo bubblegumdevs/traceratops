@@ -17,10 +17,14 @@
 
 package com.bubblegum.traceratops.app.ui.adapters.plugins;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 
 import com.bubblegum.traceratops.app.model.CrashEntry;
+import com.bubblegum.traceratops.app.ui.activities.CrashDetailsActivity;
+import com.bubblegum.traceratops.app.ui.fragments.CrashDetailsFragment;
 import com.bubblegum.traceratops.app.ui.utils.CircularTextDrawable;
 
 public class CrashAdapterPlugin extends AbsAdapterPlugin <CrashEntry> {
@@ -54,6 +58,9 @@ public class CrashAdapterPlugin extends AbsAdapterPlugin <CrashEntry> {
 
     @Override
     public void onItemClick(CrashEntry entry) {
-
+        Intent crashIntent = new Intent(getContext(), CrashDetailsActivity.class);
+        crashIntent.putExtra(CrashDetailsFragment.EXTRA_CRASH_MSG, entry.message);
+        crashIntent.putExtra(CrashDetailsFragment.EXTRA_CRASH_STACKTRACE, entry.stacktrace);
+        getContext().startActivity(crashIntent);
     }
 }

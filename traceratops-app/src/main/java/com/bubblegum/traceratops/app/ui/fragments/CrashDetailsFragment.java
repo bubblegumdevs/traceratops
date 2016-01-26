@@ -25,12 +25,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bubblegum.traceratops.app.R;
-import com.bubblegum.traceratops.app.model.CrashEntry;
 
 public class CrashDetailsFragment extends BaseFragment {
 
-    private static final String EXTRA_CRASH_MSG = ":crash:message";
-    private static final String EXTRA_CRASH_STACKTRACE = ":crash:stacktrace";
+    public static final String EXTRA_CRASH_MSG = ":crash:message";
+    public static final String EXTRA_CRASH_STACKTRACE = ":crash:stacktrace";
 
     @Nullable
     @Override

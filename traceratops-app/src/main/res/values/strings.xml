@@ -13,5 +13,7 @@
     <string name="crash_notification_title">Your app has crashed</string>
     <string name="crash_notification_text">A new crash has been logged. Click here to view stack trace.</string>
 
+    <!-- Detail activity titles -->
+    <string name="crash_detail_activity_title">Crash</string>
 
 </resources>

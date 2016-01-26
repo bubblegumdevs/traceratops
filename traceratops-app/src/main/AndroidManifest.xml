@@ -27,6 +27,8 @@
 
         <activity android:name=".ui.activities.ObjectDetailsActivity" />
 
+        <activity android:name=".ui.activities.CrashDetailsActivity" />
+
     </application>
 
 </manifest>
