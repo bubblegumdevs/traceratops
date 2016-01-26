@@ -16,6 +16,7 @@
 
 package com.bubblegum.traceratops.sdk.client;
 
+import android.app.NotificationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;

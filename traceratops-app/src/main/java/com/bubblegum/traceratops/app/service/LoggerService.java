@@ -16,19 +16,26 @@
 
 package com.bubblegum.traceratops.app.service;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.support.v7.app.NotificationCompat;
 
 import com.bubblegum.traceratops.ILoggerService;
+import com.bubblegum.traceratops.app.R;
 import com.bubblegum.traceratops.app.TraceratopsApplication;
 import com.bubblegum.traceratops.app.model.CrashEntry;
 import com.bubblegum.traceratops.app.model.LogEntry;
 import com.bubblegum.traceratops.app.model.TLogEntry;
+import com.bubblegum.traceratops.app.ui.activities.MainActivity;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -82,6 +89,20 @@ public class LoggerService extends Service {
 
     private void queueCrash(String stacktrace, String message) {
         mExecutorService.submit(new CrashTask(message, stacktrace));
+
+        /* Crash notification:
+         * Clicking on this notification should take the user directly to that particular crash page
+         */
+        NotificationManager notifMan = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        builder.setSmallIcon(R.drawable.ic_notif_default)
+                .setContentTitle("A new crash has been logged")
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setAutoCancel(true)
+                .setContentIntent(contentIntent);
+        notifMan.notify(0, builder.build());
     }
 
     private class LogTask implements Runnable {
