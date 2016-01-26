@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~
   ~ Copyright 2015 Bubblegum Developers
   ~
@@ -17,7 +16,8 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="12dp">
 
@@ -25,27 +25,55 @@
         android:id="@+id/simple_log_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_marginTop="16dp"
-        android:layout_centerInParent="true"
-        android:text="Click here to trigger log event"
-        android:background="@color/colorPrimary"/>
+        android:background="@color/colorPrimary"
+        android:text="Click here to trigger log event" />
+
 
     <Button
         android:id="@+id/simulate_crash_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_marginTop="16dp"
-        android:layout_centerInParent="true"
-        android:text="Click here to trigger crash"
-        android:background="@color/colorPrimary"/>
+        android:background="@color/colorPrimary"
+        android:text="Click here to trigger crash" />
+
+    <LinearLayout
+        android:layout_marginTop="16dp"
+        android:layout_width="match_parent"
+        android:gravity="bottom"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
+            android:text="500"
+            android:id="@+id/benchmark_number"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:inputType="number"
+            />
+
+        <Button
+            android:id="@+id/simulate_benchmark"
+            android:layout_width="0dp"
+            android:layout_weight="3"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerInParent="true"
+            android:background="@color/colorPrimary"
+            android:text="Perform benchmark" />
+    </LinearLayout>
+    
+    <ProgressBar
+        android:layout_width="match_parent"
+        android:layout_height="72dp" />
 
     <TextView
         android:id="@+id/simple_debug_string"
         android:layout_width="match_parent"
         android:layout_height="54dp"
-        android:text="Simple debug string"
-        android:gravity="center"/>
+        android:gravity="center"
+        android:text="Simple debug string" />
 
 </LinearLayout>

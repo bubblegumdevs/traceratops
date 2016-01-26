@@ -21,10 +21,13 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bubblegum.traceratops.demo.R;
+import com.bubblegum.traceratops.demo.dummy.TLogBenchmarkDemoObject;
 import com.bubblegum.traceratops.demo.dummy.TLogDemoObject;
 import com.bubblegum.traceratops.sdk.client.Debug;
 import com.bubblegum.traceratops.sdk.client.Log;
@@ -49,9 +52,19 @@ public class MainActivity extends AppCompatActivity {
         simpleLogButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 Log.d(TAG, "Simple log event triggered");
                 TLogDemoObject tLogDemoObject = new TLogDemoObject();
                 TLog.d(TAG, "Simple TLog object", tLogDemoObject);
+            }
+        });
+
+        Button benchmarkButton = (Button) findViewById(R.id.simulate_benchmark);
+        benchmarkButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                performBenchmark(Integer.valueOf(((EditText) findViewById(R.id.benchmark_number)).getText().toString()));
             }
         });
 
@@ -71,5 +84,15 @@ public class MainActivity extends AppCompatActivity {
     private void induceCrash() {
         String myString = null;
         myString.getBytes();
+    }
+
+    private void performBenchmark(int count) {
+        long startTime = System.currentTimeMillis();
+        for(int i = 0; i < count; i++) {
+            TLog.d("BENCHMARK", "Benchmark #" + i, new TLogBenchmarkDemoObject());
+        }
+        long endTime = System.currentTimeMillis();
+        long elapsed = endTime - startTime;
+        Toast.makeText(this, "Elapsed time for " + count + " passes: " + elapsed + " milliseconds", Toast.LENGTH_LONG).show();
     }
 }

@@ -22,6 +22,36 @@ public class TLogDemoObject {
 
     @TLogEntry("name")
     private String name = "Girish";
+    private String longString = "GirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGi" +
+            "rishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGi" +
+            "rishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGi" +
+            "rishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGir" +
+            "ishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGiris" +
+            "hGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGi" +
+            "rishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishG" +
+            "irishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGi" +
+            "rishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGiri" +
+            "shGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGir" +
+            "ishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGir" +
+            "ishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirish" +
+            "GirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGiris" +
+            "hGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGiris" +
+            "hGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishG" +
+            "irishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirish" +
+            "GirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGiri" +
+            "shGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGiri" +
+            "shGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGi" +
+            "rishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirish" +
+            "GirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGiri" +
+            "shGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGiris" +
+            "hGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGiri" +
+            "shGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirish" +
+            "GirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGi" +
+            "rishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGiris" +
+            "hGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishG" +
+            "irishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGiris" +
+            "hGirishGirishGirishGiris" +
+            "hGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirishGirish";
     private String password = "Hidden";
     @TLogEntry("ID number")
     private int id = 73;
