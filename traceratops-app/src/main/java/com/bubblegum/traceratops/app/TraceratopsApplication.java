@@ -69,7 +69,7 @@ public class TraceratopsApplication extends Application {
     }
 
     public void addEntry(@NonNull BaseEntry entry) {
-        mEntryList.add(entry);
+        mEntryList.add(0, entry);
         android.util.Log.d("TRACERT", "Log added");
         notifyListeners(entry, ENTRY_ACTION_ADDED);
     }

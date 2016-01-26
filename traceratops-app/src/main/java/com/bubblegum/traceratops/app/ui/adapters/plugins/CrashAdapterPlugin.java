@@ -17,11 +17,16 @@
 
 package com.bubblegum.traceratops.app.ui.adapters.plugins;
 
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 
 import com.bubblegum.traceratops.app.model.CrashEntry;
+import com.bubblegum.traceratops.app.ui.utils.CircularTextDrawable;
 
 public class CrashAdapterPlugin extends AbsAdapterPlugin <CrashEntry> {
+
+    private Drawable mDrawable = new CircularTextDrawable("!", Color.RED);
+
     @Override
     public Class<CrashEntry> getSupportedClass() {
         return CrashEntry.class;
@@ -39,12 +44,12 @@ public class CrashAdapterPlugin extends AbsAdapterPlugin <CrashEntry> {
 
     @Override
     public long getTimestamp(CrashEntry entry) {
-        return 0;
+        return entry.timestamp;
     }
 
     @Override
     public Drawable getImageDrawable(CrashEntry entry) {
-        return null;
+        return mDrawable;
     }
 
     @Override
