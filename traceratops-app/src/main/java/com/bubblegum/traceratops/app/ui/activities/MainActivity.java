@@ -16,6 +16,7 @@
 
 package com.bubblegum.traceratops.app.ui.activities;
 
+import android.app.NotificationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
@@ -48,6 +49,17 @@ public class MainActivity extends BaseActivity {
         tabLayout.setupWithViewPager(viewPager);
 
         getSupportActionBar().setTitle(getString(R.string.dash_board));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        clearAllPendingNotifications();
+    }
+
+    private void clearAllPendingNotifications() {
+        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        nm.cancel(R.id.traceratops_crash_id);
     }
 
     private void setupViewPager(ViewPager viewPager) {
