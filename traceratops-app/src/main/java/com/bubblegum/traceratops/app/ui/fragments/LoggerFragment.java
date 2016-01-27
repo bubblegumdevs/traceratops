@@ -23,11 +23,14 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
+import com.bubblegum.traceratops.app.LogStub;
 import com.bubblegum.traceratops.app.R;
 import com.bubblegum.traceratops.app.TraceratopsApplication;
 import com.bubblegum.traceratops.app.model.BaseEntry;
 import com.bubblegum.traceratops.app.ui.adapters.BaseEntryAdapter;
+import com.bubblegum.traceratops.app.ui.adapters.filters.LogLevelFilter;
 import com.bubblegum.traceratops.app.ui.adapters.plugins.CrashAdapterPlugin;
 import com.bubblegum.traceratops.app.ui.adapters.plugins.LogAdapterPlugin;
 import com.bubblegum.traceratops.app.ui.adapters.plugins.TLogAdapterPlugin;
@@ -38,6 +41,11 @@ public class LoggerFragment extends BaseFragment implements TraceratopsApplicati
 
     RecyclerView mRecyclerView;
     BaseEntryAdapter mEntryAdapter;
+    Filters mFilters = new Filters();
+
+    private class Filters {
+        public LogLevelFilter logLevelFilter;
+    }
 
     @Nullable
     @Override
@@ -49,6 +57,7 @@ public class LoggerFragment extends BaseFragment implements TraceratopsApplicati
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         mRecyclerView = (RecyclerView) view.findViewById(R.id.logger_recycler_view);
         mEntryAdapter = new BaseEntryAdapter(getContext(), TraceratopsApplication.from(getActivity()).getEntries());
+        setupFilters(mEntryAdapter);
         mEntryAdapter.addAdapterPlugin(new LogAdapterPlugin())
                 .addAdapterPlugin(new TLogAdapterPlugin())
                 .addAdapterPlugin(new CrashAdapterPlugin());
@@ -56,7 +65,18 @@ public class LoggerFragment extends BaseFragment implements TraceratopsApplicati
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(llm);
         mRecyclerView.setAdapter(mEntryAdapter);
+//        Button button = (Button) view.findViewById(R.id.test);
+//        button.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                mFilters.logLevelFilter.filter(String.valueOf(LogStub.E));
+//            }
+//        });
         super.onViewCreated(view, savedInstanceState);
+    }
+
+    private void setupFilters(BaseEntryAdapter baseEntryAdapter) {
+        mFilters.logLevelFilter = new LogLevelFilter(baseEntryAdapter);
     }
 
     @Override

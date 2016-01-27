@@ -22,11 +22,14 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bubblegum.traceratops.app.R;
 import com.bubblegum.traceratops.app.model.BaseEntry;
+import com.bubblegum.traceratops.app.ui.adapters.filters.BaseEntryFilter;
 import com.bubblegum.traceratops.app.ui.adapters.plugins.AbsAdapterPlugin;
 import com.bubblegum.traceratops.app.ui.adapters.plugins.GenericAdapterPlugin;
 
@@ -39,10 +42,12 @@ public class BaseEntryAdapter extends RecyclerView.Adapter {
 
     private final Context mContext;
     private final List<BaseEntry> mEntries;
+    private final List<BaseEntry> mFilteredEntries;
 
     public BaseEntryAdapter(@NonNull Context context, @NonNull List<BaseEntry> entries) {
         mContext = context;
         mEntries = entries;
+        mFilteredEntries = mEntries;
     }
 
     public static class EntryViewHolder extends RecyclerView.ViewHolder {
@@ -77,7 +82,7 @@ public class BaseEntryAdapter extends RecyclerView.Adapter {
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if(holder instanceof EntryViewHolder) {
-            BaseEntry entry = mEntries.get(position);
+            BaseEntry entry = mFilteredEntries.get(position);
             AbsAdapterPlugin<? extends BaseEntry> plugin = findPluginForClass(entry.getClass());
             plugin.bind(mContext, entry, (EntryViewHolder) holder);
         }
@@ -85,7 +90,7 @@ public class BaseEntryAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemCount() {
-        return mEntries.size();
+        return mFilteredEntries.size();
     }
 
     private AbsAdapterPlugin<? extends BaseEntry> findPluginForClass(Class<? extends BaseEntry> clazz) {
@@ -95,5 +100,19 @@ public class BaseEntryAdapter extends RecyclerView.Adapter {
             }
         }
         return new GenericAdapterPlugin();
+    }
+
+    public List<BaseEntry> getOriginalEntries() {
+        return mEntries;
+    }
+
+    public List<BaseEntry> getFilteredEntries() {
+        return mFilteredEntries;
+    }
+
+    public void clearFilters() {
+        mFilteredEntries.clear();
+        mFilteredEntries.addAll(mEntries);
+        notifyDataSetChanged();
     }
 }
