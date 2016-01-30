@@ -23,50 +23,54 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.bubblegum.traceratops.app.model.LogEntry;
 
 import java.util.ArrayList;
 
-public class LogDbHelper extends SQLiteOpenHelper {
+public class TraceratopsDbHelper extends SQLiteOpenHelper {
     private static final String TAG = "bubblegum_db";
 
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "Logs.db";
 
-    public LogDbHelper(Context context) {
+    public TraceratopsDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        sqLiteDatabase.execSQL(LogContract.SQL_CREATE_LOG_ENTRIES);
+        // Create a table for log entries
+        sqLiteDatabase.execSQL(TraceratopsContract.SQL_CREATE_LOG_ENTRIES);
+        // Create a table for pings
+        sqLiteDatabase.execSQL(TraceratopsContract.SQL_CREATE_PING_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
         // For now discarding the entire database and creating a new one
-        sqLiteDatabase.execSQL(LogContract.SQL_DELETE_LOG_ENTRIES);
+        sqLiteDatabase.execSQL(TraceratopsContract.SQL_DELETE_LOG_ENTRIES);
+        sqLiteDatabase.execSQL(TraceratopsContract.SQL_DELETE_PING_TABLE);
+
         onCreate(sqLiteDatabase);
     }
 
-    public void insertInDb(@NonNull long timestamp, @NonNull int level, String tag, String description, String stacktrace) {
+    public void insertLogInDb(@NonNull long timestamp, @NonNull int level, String tag, String description, String stacktrace) {
         ContentValues contentValues = new ContentValues();
-        contentValues.put(LogContract.LogSchema.COLUMN_TIMESTAMP, timestamp);
-        contentValues.put(LogContract.LogSchema.COLUMN_LEVEL, level);
+        contentValues.put(TraceratopsContract.LogSchema.COLUMN_TIMESTAMP, timestamp);
+        contentValues.put(TraceratopsContract.LogSchema.COLUMN_LEVEL, level);
         if (tag != null) {
-            contentValues.put(LogContract.LogSchema.COLUMN_TAG, tag);
+            contentValues.put(TraceratopsContract.LogSchema.COLUMN_TAG, tag);
         }
         if (description != null) {
-            contentValues.put(LogContract.LogSchema.COLUMN_DESCRIPTION, description);
+            contentValues.put(TraceratopsContract.LogSchema.COLUMN_DESCRIPTION, description);
         }
         if (stacktrace != null) {
-            contentValues.put(LogContract.LogSchema.COLUMN_STACKTRACE, stacktrace);
+            contentValues.put(TraceratopsContract.LogSchema.COLUMN_STACKTRACE, stacktrace);
         }
 
         SQLiteDatabase db = getWritableDatabase();
-        db.insert(LogContract.LogSchema.TABLE_NAME, null, contentValues);
+        db.insert(TraceratopsContract.LogSchema.TABLE_NAME, null, contentValues);
     }
 
     /**
@@ -75,7 +79,7 @@ public class LogDbHelper extends SQLiteOpenHelper {
      */
     public Cursor readAllLogs() {
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.query(LogContract.LogSchema.TABLE_NAME, null, null, null, null, null, null);
+        Cursor cursor = db.query(TraceratopsContract.LogSchema.TABLE_NAME, null, null, null, null, null, null);
         return cursor;
     }
 
@@ -89,11 +93,11 @@ public class LogDbHelper extends SQLiteOpenHelper {
 
         if (cursor.moveToFirst()) {
             do {
-                long timestamp = cursor.getLong(cursor.getColumnIndex(LogContract.LogSchema.COLUMN_TIMESTAMP));
-                int level = cursor.getInt(cursor.getColumnIndex(LogContract.LogSchema.COLUMN_LEVEL));
-                String tag = cursor.getString(cursor.getColumnIndex(LogContract.LogSchema.COLUMN_TAG));
-                String desc = cursor.getString(cursor.getColumnIndex(LogContract.LogSchema.COLUMN_DESCRIPTION));
-                String stacktrace = cursor.getString(cursor.getColumnIndex(LogContract.LogSchema.COLUMN_STACKTRACE));
+                long timestamp = cursor.getLong(cursor.getColumnIndex(TraceratopsContract.LogSchema.COLUMN_TIMESTAMP));
+                int level = cursor.getInt(cursor.getColumnIndex(TraceratopsContract.LogSchema.COLUMN_LEVEL));
+                String tag = cursor.getString(cursor.getColumnIndex(TraceratopsContract.LogSchema.COLUMN_TAG));
+                String desc = cursor.getString(cursor.getColumnIndex(TraceratopsContract.LogSchema.COLUMN_DESCRIPTION));
+                String stacktrace = cursor.getString(cursor.getColumnIndex(TraceratopsContract.LogSchema.COLUMN_STACKTRACE));
 
                 LogEntry logEntry = new LogEntry();
                 logEntry.timestamp = timestamp;

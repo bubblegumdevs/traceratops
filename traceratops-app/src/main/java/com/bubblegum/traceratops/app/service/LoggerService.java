@@ -35,6 +35,7 @@ import com.bubblegum.traceratops.app.R;
 import com.bubblegum.traceratops.app.TraceratopsApplication;
 import com.bubblegum.traceratops.app.model.CrashEntry;
 import com.bubblegum.traceratops.app.model.LogEntry;
+import com.bubblegum.traceratops.app.model.PingEntry;
 import com.bubblegum.traceratops.app.model.TLogEntry;
 import com.bubblegum.traceratops.app.ui.activities.CrashDetailsActivity;
 import com.bubblegum.traceratops.app.ui.activities.MainActivity;
@@ -86,6 +87,21 @@ public class LoggerService extends Service {
         @Override
         public void crash(String stacktrace, String message) throws RemoteException {
             queueCrash(stacktrace, message);
+        }
+
+        @Override
+        public void pingStart(long startTime, String message, int token) throws RemoteException {
+
+        }
+
+        @Override
+        public void pingEnd(long startTime, long endTime, String message, int token) throws RemoteException {
+
+        }
+
+        @Override
+        public void pingTick(long timetamp, int sizeInBytes, int token) throws RemoteException {
+
         }
     };
 
@@ -175,6 +191,62 @@ public class LoggerService extends Service {
         public void run() {
             TraceratopsApplication.from(getApplication()).addEntry(logEntry);
             // TODO add database insertion code
+        }
+    }
+
+    private class PingTask implements Runnable {
+
+        final PingEntry pingEntry;
+
+        /**
+         * Records a finished ping
+         * @param timeStart Start time of ping
+         * @param timeEnd End time of ping
+         * @param message Message to log along with ping
+         * @param token Token associated with the ping session
+         */
+        public PingTask(long timeStart, long timeEnd, String message, int token, long timestamp) {
+            pingEntry = new PingEntry();
+            pingEntry.timestampBegin = timeStart;
+            pingEntry.timestampEnd = timeEnd;
+            pingEntry.message = message;
+            pingEntry.token = token;
+            pingEntry.timestamp = timestamp;
+        }
+
+        /**
+         * Records the start of a ping
+         * @param timeStart Start time of ping
+         * @param message Message to log along with ping
+         * @param token Token associated with the ping session
+         */
+        public PingTask(long timeStart, String message, int token, long timestamp) {
+            pingEntry = new PingEntry();
+            pingEntry.timestampBegin = timeStart;
+            pingEntry.timestampEnd = 0;
+            pingEntry.message = message;
+            pingEntry.token = token;
+            pingEntry.timestamp = timestamp;
+        }
+
+        /**
+         * Records a tick to indicate some activity associated with an unfinished ping
+         * @param tickTimestamp Time of tick occurrence
+         * @param sizeInBytes Size of data sent / received in bytes
+         * @param token Token associated with the ping session
+         */
+        public PingTask(long tickTimestamp, int sizeInBytes, int token) {
+            pingEntry = new PingEntry();
+            pingEntry.timestamp = tickTimestamp;
+            pingEntry.sizeInBytes = sizeInBytes;
+            pingEntry.token = token;
+            pingEntry.timestampBegin = 0;
+            pingEntry.timestampEnd = 0;
+        }
+
+        @Override
+        public void run() {
+
         }
     }
 

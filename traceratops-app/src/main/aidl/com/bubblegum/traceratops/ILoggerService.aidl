@@ -23,4 +23,7 @@ interface ILoggerService {
     String getString(String tag, String defaultValue);
     boolean getBoolean(String tag, boolean defaultValue);
     void crash(String stacktrace, String message);
+    void pingStart(long startTime, String message, int token);
+    void pingEnd(long startTime, long endTime, String message, int token);
+    void pingTick(long timetamp, int sizeInBytes, int token);
 }

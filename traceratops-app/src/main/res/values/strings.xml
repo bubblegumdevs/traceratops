@@ -16,4 +16,9 @@
     <!-- Detail activity titles -->
     <string name="crash_detail_activity_title">Crash</string>
 
+    <!-- List item titles for ping -->
+    <string name="ping_start">PING - Begin</string>
+    <string name="ping_end">PING - End</string>
+    <string name="ping_tick">Tick recorded</string>
+
 </resources>

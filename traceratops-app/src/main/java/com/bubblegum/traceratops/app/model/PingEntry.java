@@ -1,4 +1,5 @@
 /*
+ *
  * Copyright 2015 Bubblegum Developers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,16 +15,12 @@
  * limitations under the License.
  */
 
-package com.bubblegum.traceratops;
+package com.bubblegum.traceratops.app.model;
 
-interface ILoggerService {
-
-    void log(String tag, String message, String stackTrace, int level);
-    void tlog(String tag, String message, in Bundle args, int level);
-    String getString(String tag, String defaultValue);
-    boolean getBoolean(String tag, boolean defaultValue);
-    void crash(String stacktrace, String message);
-    void pingStart(long startTime, String message, int token);
-    void pingEnd(long startTime, long endTime, String message, int token);
-    void pingTick(long timetamp, int sizeInBytes, int token);
+public class PingEntry extends BaseEntry {
+    public long timestampBegin;
+    public long timestampEnd;
+    public String message;
+    public int token;
+    public int sizeInBytes;
 }

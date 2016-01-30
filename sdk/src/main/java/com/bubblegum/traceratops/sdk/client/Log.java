@@ -36,8 +36,6 @@ public final class Log {
     boolean mShouldLog;
     private ILoggerService mLoggerService;
 
-    private ExecutorService mExecutorService = Executors.newFixedThreadPool(1);
-
     LogProxy mLogProxy = LogProxies.DEFAULT_LOG_PROXY;
 
     Log() {
@@ -233,7 +231,7 @@ public final class Log {
     }
 
     void logInternalAsync(final String tag, final String message, @Nullable final Object supplementObject, final int level) {
-        mExecutorService.submit(new Runnable() {
+        Traceratops.sInstance.mExecutorService.submit(new Runnable() {
             @Override
             public void run() {
                 logInternal(tag, message, supplementObject, level);
@@ -274,7 +272,7 @@ public final class Log {
     }
 
     private void crashInternalAsync(final Throwable throwable) {
-        mExecutorService.submit(new Runnable() {
+        Traceratops.sInstance.mExecutorService.submit(new Runnable() {
             @Override
             public void run() {
                 crashInternal(getStackTraceAsString(throwable), throwable.getMessage());

@@ -30,6 +30,8 @@ import android.support.annotation.Nullable;
 import com.bubblegum.traceratops.ILoggerService;
 
 import java.lang.ref.WeakReference;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Traceratops implements ServiceConnection {
 
@@ -37,6 +39,8 @@ public class Traceratops implements ServiceConnection {
     private static final String TAG = "bubblegum_traceratops";
 
     private boolean mHasWarnedNotLogging = false;
+
+    ExecutorService mExecutorService = Executors.newFixedThreadPool(1);
 
     private ILoggerService mLoggerService;
     LoggerServiceConnectionCallbacks mLoggerServiceConnectionCallbacks;

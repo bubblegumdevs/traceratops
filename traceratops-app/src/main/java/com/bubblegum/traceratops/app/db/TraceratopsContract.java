@@ -19,9 +19,16 @@ package com.bubblegum.traceratops.app.db;
 
 import android.provider.BaseColumns;
 
-public class LogContract {
+public class TraceratopsContract {
 
-    public LogContract() {}
+    public TraceratopsContract() {}
+
+    private static final String TEXT_TYPE = " TEXT";
+    private static final String INTEGER_TYPE = " INTEGER";
+    private static final String COMMA_SEP = ",";
+    private static final String NOT_NULL = "NOTNULL";
+
+    /* ======================================= LOGS ========================================= */
 
     public static abstract class LogSchema implements BaseColumns {
         public static final String TABLE_NAME = "log_entry";
@@ -32,11 +39,6 @@ public class LogContract {
         public static final String COLUMN_DESCRIPTION = "description";
         public static final String COLUMN_STACKTRACE = "stacktrace";
     }
-
-    private static final String TEXT_TYPE = " TEXT";
-    private static final String INTEGER_TYPE = " INTEGER";
-    private static final String COMMA_SEP = ",";
-    private static final String NOT_NULL = "NOTNULL";
 
     /**
      * Create table for log_entry
@@ -56,4 +58,31 @@ public class LogContract {
      */
     public static final String SQL_DELETE_LOG_ENTRIES =
             "DROP TABLE IF EXISTS " + LogSchema.TABLE_NAME;
+
+    /* ===================================== NETWORK PINGS ====================================== */
+
+    public static abstract class PingSchema implements BaseColumns {
+        public static final String TABLE_NAME = "ping";
+        public static final String _ID = "_id";
+        public static final String COLUMN_TIMESTAMP_BEGIN = "begin";
+        public static final String COLUMN_TIMESTAMP_END = "end";
+        public static final String COLUMN_MESSAGE = "message";
+    }
+
+    /**
+     * Create table for ping
+     */
+    public static final String SQL_CREATE_PING_TABLE =
+            "CREATE TABLE " + PingSchema.TABLE_NAME + " (" +
+                    PingSchema._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    PingSchema.COLUMN_TIMESTAMP_BEGIN + INTEGER_TYPE + NOT_NULL + COMMA_SEP +
+                    PingSchema.COLUMN_TIMESTAMP_END + INTEGER_TYPE + NOT_NULL + COMMA_SEP +
+                    PingSchema.COLUMN_MESSAGE + TEXT_TYPE + COMMA_SEP +
+                    " )";
+
+    /**
+     * Drop the ping table
+     */
+    public static final String SQL_DELETE_PING_TABLE =
+            "DROP TABLE IF EXISTS " + PingSchema.TABLE_NAME;
 }
