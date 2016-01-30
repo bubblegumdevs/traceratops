@@ -18,6 +18,7 @@ package com.bubblegum.traceratops.app.ui.adapters.plugins;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.support.v4.view.ViewCompat;
 import android.text.format.DateUtils;
 import android.view.View;
 
@@ -34,24 +35,69 @@ public abstract class AbsAdapterPlugin<T extends BaseEntry> {
     public abstract String getSecondaryText(T entry);
     public abstract long getTimestamp(T entry);
     public abstract Drawable getImageDrawable(T entry);
-    public abstract void onItemClick(T entry);
 
     @SuppressWarnings("unchecked") // We already check the class in BaseEntryAdapter
-    public void bind(Context context, final BaseEntry entry, BaseEntryAdapter.EntryViewHolder holder) {
+    public void bind(Context context, final BaseEntry entry, final BaseEntryAdapter.EntryViewHolder holder, final BaseEntryAdapter adapter) {
         this.context = context;
         if(entry.getClass() == getSupportedClass()) {
+            boolean isThisItemSelected = holder.index == adapter.getSelectedIndex();
+            holder.topSeparator.setVisibility(isThisItemSelected ? View.VISIBLE : View.GONE);
+            holder.bottomSeparator.setVisibility(isThisItemSelected ? View.VISIBLE : View.GONE);
             holder.vhPrimaryText.setText(getPrimaryText((T) entry));
+            holder.vhPrimaryText.setMaxLines(isThisItemSelected ? 5 : 2);
+            ViewCompat.setTranslationZ(holder.itemView, isThisItemSelected ? 5 : 0);
             holder.vhSecondaryText.setText(getSecondaryText((T) entry));
             holder.vhTimestampText.setText(systemTimeInMillisToSystemDateFormat(context, getTimestamp((T) entry)));
             holder.vhIcon.setImageDrawable(getImageDrawable((T) entry));
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onItemClick((T) entry);
+                    if(adapter.getSelectedIndex()==holder.index) {
+                        adapter.setSelectedIndex(-1);
+                    } else {
+                        adapter.setSelectedIndex(holder.index);
+                    }
+                    adapter.notifyDataSetChanged();
                 }
             });
+            boolean atLeastOneItemVisible = false;
+            if(getPrimaryActionText()!=null) {
+                atLeastOneItemVisible = true;
+                holder.vhPrimaryAction.setVisibility(View.VISIBLE);
+                holder.vhPrimaryAction.setText(getPrimaryActionText());
+                holder.vhPrimaryAction.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        onPrimaryButtonClicked((T) entry);
+                    }
+                });
+            } else {
+                holder.vhPrimaryAction.setVisibility(View.GONE);
+            }
+            if(getSecondaryActionText()!=null) {
+                atLeastOneItemVisible = true;
+                holder.vhSecondaryAction.setVisibility(View.VISIBLE);
+                holder.vhSecondaryAction.setText(getSecondaryActionText());
+                holder.vhSecondaryAction.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        onSecondaryButtonClicked((T) entry);
+                    }
+                });
+            } else {
+                holder.vhSecondaryAction.setVisibility(View.GONE);
+            }
+            holder.vhButtonLayout.setVisibility(atLeastOneItemVisible && isThisItemSelected ? View.VISIBLE : View.GONE);
         }
     }
+
+    protected abstract void onPrimaryButtonClicked(T entry);
+
+    protected abstract void onSecondaryButtonClicked(T entry);
+
+    protected abstract String getPrimaryActionText();
+
+    protected abstract String getSecondaryActionText();
 
     protected Context getContext() {
         return context;

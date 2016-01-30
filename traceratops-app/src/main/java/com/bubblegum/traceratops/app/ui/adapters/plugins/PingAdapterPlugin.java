@@ -84,7 +84,22 @@ public class PingAdapterPlugin extends AbsAdapterPlugin<PingEntry> {
     }
 
     @Override
-    public void onItemClick(PingEntry entry) {
+    protected void onPrimaryButtonClicked(PingEntry entry) {
 
+    }
+
+    @Override
+    protected void onSecondaryButtonClicked(PingEntry entry) {
+
+    }
+
+    @Override
+    protected String getPrimaryActionText() {
+        return null;
+    }
+
+    @Override
+    protected String getSecondaryActionText() {
+        return null;
     }
 }

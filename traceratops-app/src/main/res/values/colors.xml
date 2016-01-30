@@ -11,4 +11,6 @@
     <color name="logLevelError">#e74c3c</color>
     <color name="logLevelWTF">#c0392b</color>
 
+    <color name="window_background">#ededed</color>
+
 </resources>

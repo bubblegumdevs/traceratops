@@ -48,7 +48,23 @@ public class GenericAdapterPlugin extends AbsAdapterPlugin<BaseEntry> {
     }
 
     @Override
-    public void onItemClick(BaseEntry entry) {
+    protected void onPrimaryButtonClicked(BaseEntry entry) {
 
     }
+
+    @Override
+    protected void onSecondaryButtonClicked(BaseEntry entry) {
+
+    }
+
+    @Override
+    protected String getPrimaryActionText() {
+        return null;
+    }
+
+    @Override
+    protected String getSecondaryActionText() {
+        return null;
+    }
+
 }

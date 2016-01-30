@@ -3,6 +3,12 @@
 
     <string name="dash_board">Traceratops Dashboard</string>
 
+    <string name="delete">Delete</string>
+
+    <string name="view">Open</string>
+    <string name="copy">Copy</string>
+
+
     <!-- Fragment titles -->
     <string name="debug_fragment_title">Debug</string>
     <string name="logger_fragment_title">Logs</string>
@@ -15,6 +21,8 @@
 
     <!-- Detail activity titles -->
     <string name="crash_detail_activity_title">Crash</string>
+    <string name="crash_entry_copied_to_clipboard">Stack trace copied to clipboard.</string>
+    <string name="log_entry_copied_to_clipboard">Log message copied to clipboard.</string>
 
     <!-- List item titles for ping -->
     <string name="ping_start">PING - Begin</string>

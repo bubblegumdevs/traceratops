@@ -17,11 +17,14 @@
 
 package com.bubblegum.traceratops.app.ui.adapters.plugins;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.widget.Toast;
 
+import com.bubblegum.traceratops.app.R;
 import com.bubblegum.traceratops.app.model.CrashEntry;
 import com.bubblegum.traceratops.app.ui.activities.CrashDetailsActivity;
 import com.bubblegum.traceratops.app.ui.fragments.CrashDetailsFragment;
@@ -57,10 +60,32 @@ public class CrashAdapterPlugin extends AbsAdapterPlugin <CrashEntry> {
     }
 
     @Override
-    public void onItemClick(CrashEntry entry) {
+    protected void onPrimaryButtonClicked(CrashEntry entry) {
         Intent crashIntent = new Intent(getContext(), CrashDetailsActivity.class);
         crashIntent.putExtra(CrashDetailsFragment.EXTRA_CRASH_MSG, entry.message);
         crashIntent.putExtra(CrashDetailsFragment.EXTRA_CRASH_STACKTRACE, entry.stacktrace);
         getContext().startActivity(crashIntent);
+    }
+
+    @Override
+    protected void onSecondaryButtonClicked(CrashEntry entry) {
+        copyText(entry.stacktrace);
+        Toast.makeText(getContext(), R.string.crash_entry_copied_to_clipboard, Toast.LENGTH_LONG).show();
+    }
+
+    private void copyText(String textToBeCopied) {
+        android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+        android.content.ClipData clip = android.content.ClipData.newPlainText("Traceratops",textToBeCopied);
+        clipboard.setPrimaryClip(clip);
+    }
+
+    @Override
+    protected String getPrimaryActionText() {
+        return getContext().getString(R.string.view);
+    }
+
+    @Override
+    protected String getSecondaryActionText() {
+        return getContext().getString(R.string.copy);
     }
 }
