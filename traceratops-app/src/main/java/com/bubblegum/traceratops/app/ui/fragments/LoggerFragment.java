@@ -18,19 +18,16 @@ package com.bubblegum.traceratops.app.ui.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SimpleItemAnimator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
-import com.bubblegum.traceratops.app.LogStub;
 import com.bubblegum.traceratops.app.R;
 import com.bubblegum.traceratops.app.TraceratopsApplication;
 import com.bubblegum.traceratops.app.model.BaseEntry;
+import com.bubblegum.traceratops.app.ui.activities.BaseActivity;
 import com.bubblegum.traceratops.app.ui.adapters.BaseEntryAdapter;
 import com.bubblegum.traceratops.app.ui.adapters.filters.LogLevelFilter;
 import com.bubblegum.traceratops.app.ui.adapters.plugins.CrashAdapterPlugin;
@@ -59,12 +56,13 @@ public class LoggerFragment extends BaseFragment implements TraceratopsApplicati
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         mRecyclerView = (RecyclerView) view.findViewById(R.id.logger_recycler_view);
-        mEntryAdapter = new BaseEntryAdapter(getContext(), TraceratopsApplication.from(getActivity()).getEntries());
+        BaseActivity activity = (BaseActivity) getActivity();
+        mEntryAdapter = new BaseEntryAdapter(activity, TraceratopsApplication.from(getActivity()).getEntries());
         setupFilters(mEntryAdapter);
-        mEntryAdapter.addAdapterPlugin(new LogAdapterPlugin())
-                .addAdapterPlugin(new TLogAdapterPlugin())
-                .addAdapterPlugin(new PingAdapterPlugin())
-                .addAdapterPlugin(new CrashAdapterPlugin());
+        mEntryAdapter.addAdapterPlugin(new LogAdapterPlugin(activity))
+                .addAdapterPlugin(new TLogAdapterPlugin(activity))
+                .addAdapterPlugin(new PingAdapterPlugin(activity))
+                .addAdapterPlugin(new CrashAdapterPlugin(activity));
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(llm);

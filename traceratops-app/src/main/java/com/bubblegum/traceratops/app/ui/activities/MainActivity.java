@@ -18,26 +18,38 @@ package com.bubblegum.traceratops.app.ui.activities;
 
 import android.app.NotificationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.view.View;
 import android.widget.Toolbar;
 
 import com.bubblegum.traceratops.app.R;
+import com.bubblegum.traceratops.app.TraceratopsApplication;
+import com.bubblegum.traceratops.app.service.LoggerService;
+import com.bubblegum.traceratops.app.ui.Snackable;
 import com.bubblegum.traceratops.app.ui.fragments.DebugFragment;
 import com.bubblegum.traceratops.app.ui.fragments.LoggerFragment;
 
 import java.util.ArrayList;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends BaseActivity implements Snackable {
+
+    CoordinatorLayout mCoordinatorLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mCoordinatorLayout = (CoordinatorLayout) findViewById(R.id.parent);
 
         android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -49,6 +61,40 @@ public class MainActivity extends BaseActivity {
         tabLayout.setupWithViewPager(viewPager);
 
         getSupportActionBar().setTitle(getString(R.string.dash_board));
+        final String errorMessage = getErrorMessageIfAny(TraceratopsApplication.from(this).getErrorCode());
+        if(errorMessage!=null) {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    showSnackbar(errorMessage, Snackbar.LENGTH_INDEFINITE, null, null);
+                }
+            }, 300);
+        }
+    }
+
+    @Override
+    public Snackbar showSnackbar(String message, int length, String actionLabel, View.OnClickListener action) {
+        Snackbar snackbar = Snackbar.make(mCoordinatorLayout, message, length);
+        if(actionLabel!=null && action!=null) {
+            snackbar.setAction(actionLabel, action);
+        }
+        snackbar.show();
+        return snackbar;
+    }
+
+    private @Nullable String getErrorMessageIfAny(int errorCode) {
+        switch (errorCode) {
+            case -1:
+                return null;
+            case LoggerService.ERROR_CODES.ERROR_CODE_APP_OUTDATED:
+                return getString(R.string.error_message_app_outdated);
+            case LoggerService.ERROR_CODES.ERROR_CODE_SDK_OUTDATED:
+                return getString(R.string.error_message_sdk_outdated);
+            case LoggerService.ERROR_CODES.ERROR_CODE_SIGNATURE_VERIFICATION_FAILED:
+                return getString(R.string.error_message_signature_verification_failed);
+            default:
+                return getString(R.string.error_message_unknown, errorCode);
+        }
     }
 
     @Override

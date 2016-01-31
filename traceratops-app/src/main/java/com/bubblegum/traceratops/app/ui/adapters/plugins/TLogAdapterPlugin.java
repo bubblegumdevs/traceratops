@@ -18,15 +18,19 @@ package com.bubblegum.traceratops.app.ui.adapters.plugins;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
 
 import com.bubblegum.traceratops.app.LogStub;
 import com.bubblegum.traceratops.app.R;
 import com.bubblegum.traceratops.app.model.TLogEntry;
+import com.bubblegum.traceratops.app.ui.activities.BaseActivity;
 import com.bubblegum.traceratops.app.ui.activities.ObjectDetailsActivity;
 import com.bubblegum.traceratops.app.ui.utils.CircularTextDrawable;
 
 public class TLogAdapterPlugin extends AbsAdapterPlugin<TLogEntry> {
+
+    public TLogAdapterPlugin(BaseActivity activity) {
+        super(activity);
+    }
 
     @Override
     public Class<TLogEntry> getSupportedClass() {
@@ -50,16 +54,16 @@ public class TLogAdapterPlugin extends AbsAdapterPlugin<TLogEntry> {
 
     @Override
     public Drawable getImageDrawable(TLogEntry entry) {
-        return new CircularTextDrawable(String.valueOf(entry.args.size()), LogStub.getColorForLevel(getContext(), entry.level));
+        return new CircularTextDrawable(String.valueOf(entry.args.size()), LogStub.getColorForLevel(getBaseActivity(), entry.level));
     }
 
     @Override
     protected void onPrimaryButtonClicked(TLogEntry entry) {
-        Intent intent = new Intent(getContext(), ObjectDetailsActivity.class);
+        Intent intent = new Intent(getBaseActivity(), ObjectDetailsActivity.class);
         intent.putExtra(ObjectDetailsActivity.EXTRA_TLOG_OBJECT, entry.args);
         intent.putExtra(ObjectDetailsActivity.EXTRA_TLOG_TAG, entry.tag);
         intent.putExtra(ObjectDetailsActivity.EXTRA_TLOG_DESCRIPTION, entry.description);
-        getContext().startActivity(intent);
+        getBaseActivity().startActivity(intent);
     }
 
     @Override
@@ -69,7 +73,7 @@ public class TLogAdapterPlugin extends AbsAdapterPlugin<TLogEntry> {
 
     @Override
     protected String getPrimaryActionText() {
-        return getContext().getString(R.string.view);
+        return getBaseActivity().getString(R.string.view);
     }
 
     @Override

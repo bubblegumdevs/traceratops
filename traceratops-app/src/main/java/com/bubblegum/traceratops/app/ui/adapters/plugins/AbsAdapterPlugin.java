@@ -23,11 +23,14 @@ import android.text.format.DateUtils;
 import android.view.View;
 
 import com.bubblegum.traceratops.app.model.BaseEntry;
+import com.bubblegum.traceratops.app.ui.activities.BaseActivity;
 import com.bubblegum.traceratops.app.ui.adapters.BaseEntryAdapter;
+
+import java.lang.ref.WeakReference;
 
 public abstract class AbsAdapterPlugin<T extends BaseEntry> {
 
-    Context context;
+    WeakReference<BaseActivity> activityRef;
 
     public abstract Class<T> getSupportedClass();
 
@@ -36,9 +39,12 @@ public abstract class AbsAdapterPlugin<T extends BaseEntry> {
     public abstract long getTimestamp(T entry);
     public abstract Drawable getImageDrawable(T entry);
 
+    public AbsAdapterPlugin(BaseActivity activity) {
+        activityRef = new WeakReference<>(activity);
+    }
+
     @SuppressWarnings("unchecked") // We already check the class in BaseEntryAdapter
-    public void bind(Context context, final BaseEntry entry, final BaseEntryAdapter.EntryViewHolder holder, final BaseEntryAdapter adapter) {
-        this.context = context;
+    public void bind(final BaseEntry entry, final BaseEntryAdapter.EntryViewHolder holder, final BaseEntryAdapter adapter) {
         if(entry.getClass() == getSupportedClass()) {
             boolean isThisItemSelected = holder.index == adapter.getSelectedIndex();
             holder.topSeparator.setVisibility(isThisItemSelected ? View.VISIBLE : View.GONE);
@@ -47,7 +53,7 @@ public abstract class AbsAdapterPlugin<T extends BaseEntry> {
             holder.vhPrimaryText.setMaxLines(isThisItemSelected ? 5 : 2);
             ViewCompat.setTranslationZ(holder.itemView, isThisItemSelected ? 5 : 0);
             holder.vhSecondaryText.setText(getSecondaryText((T) entry));
-            holder.vhTimestampText.setText(systemTimeInMillisToSystemDateFormat(context, getTimestamp((T) entry)));
+            holder.vhTimestampText.setText(systemTimeInMillisToSystemDateFormat(getBaseActivity(), getTimestamp((T) entry)));
             holder.vhIcon.setImageDrawable(getImageDrawable((T) entry));
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -99,8 +105,8 @@ public abstract class AbsAdapterPlugin<T extends BaseEntry> {
 
     protected abstract String getSecondaryActionText();
 
-    protected Context getContext() {
-        return context;
+    protected BaseActivity getBaseActivity() {
+        return activityRef.get();
     }
 
     private String systemTimeInMillisToSystemDateFormat(Context context, long millis) {

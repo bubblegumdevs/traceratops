@@ -24,8 +24,14 @@ import android.support.v4.content.ContextCompat;
 import com.bubblegum.traceratops.app.R;
 import com.bubblegum.traceratops.app.model.PingEntry;
 import com.bubblegum.traceratops.app.ui.utils.CircularTextDrawable;
+import com.bubblegum.traceratops.app.ui.activities.BaseActivity;
 
 public class PingAdapterPlugin extends AbsAdapterPlugin<PingEntry> {
+
+    public PingAdapterPlugin(BaseActivity activity) {
+        super(activity);
+    }
+
     @Override
     public Class<PingEntry> getSupportedClass() {
         return PingEntry.class;
@@ -42,17 +48,17 @@ public class PingAdapterPlugin extends AbsAdapterPlugin<PingEntry> {
             /* Both ping starting time and end time have not been recorded
              * This means that this ping is of type tick
              */
-            return getContext().getString(R.string.ping_tick);
+            return getBaseActivity().getString(R.string.ping_tick);
         } else if (entry.timestampEnd == 0) {
             /* Ping starting time has been recorded but not the end time
              * i.e. it's an unfinished ping
              */
-            return getContext().getString(R.string.ping_start);
+            return getBaseActivity().getString(R.string.ping_start);
         } else {
             /* Both the start and end time of ping are defined
              * i.e. it's a finished ping
              */
-            return getContext().getString(R.string.ping_end);
+            return getBaseActivity().getString(R.string.ping_end);
         }
     }
 
@@ -66,13 +72,13 @@ public class PingAdapterPlugin extends AbsAdapterPlugin<PingEntry> {
                 if (entry.sizeInBytes != 0) {
                     return "Tick: " + entry.sizeInBytes + " bytes received";
                 }
-                return getContext().getString(R.string.ping_tick);
+                return getBaseActivity().getString(R.string.ping_tick);
             } else if (entry.timestampEnd == 0) {
                 // Unfinished ping
-                return getContext().getString(R.string.ping_start);
+                return getBaseActivity().getString(R.string.ping_start);
             } else {
                 // Finished ping
-                return getContext().getString(R.string.ping_end);
+                return getBaseActivity().getString(R.string.ping_end);
             }
         } else {
             if (entry.sizeInBytes != 0) {
@@ -90,9 +96,9 @@ public class PingAdapterPlugin extends AbsAdapterPlugin<PingEntry> {
     @Override
     public Drawable getImageDrawable(PingEntry entry) {
         if (entry.timestampBegin == 0 && entry.timestampEnd == 0) {
-            return new CircularTextDrawable("P", ContextCompat.getColor(getContext(), R.color.pingTick));
+            return new CircularTextDrawable("P", ContextCompat.getColor(getBaseActivity(), R.color.pingTick));
         }
-        return new CircularTextDrawable("P", ContextCompat.getColor(getContext(), R.color.pingIndicator));
+        return new CircularTextDrawable("P", ContextCompat.getColor(getBaseActivity(), R.color.pingIndicator));
     }
 
     @Override

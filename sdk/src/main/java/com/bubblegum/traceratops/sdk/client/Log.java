@@ -33,7 +33,6 @@ import java.util.concurrent.Executors;
 public final class Log {
 
     static Log sInstance;
-    boolean mShouldLog;
     private ILoggerService mLoggerService;
 
     LogProxy mLogProxy = LogProxies.DEFAULT_LOG_PROXY;
@@ -240,13 +239,6 @@ public final class Log {
     }
 
     private void logInternal(String tag, String message, @Nullable Object supplementObject, int level) {
-        if(!isLogging()) {
-            if(mShouldLog) {
-                Traceratops.sInstance.attemptConnection();
-            } else {
-                return;
-            }
-        }
         try {
             if (mLoggerService != null) {
                 if(supplementObject == null || supplementObject instanceof Throwable) {
@@ -292,13 +284,8 @@ public final class Log {
         }
     }
 
-    public Log setShouldLog(boolean shouldLog) {
-        mShouldLog = shouldLog;
-        return this;
-    }
-
     private boolean isLogging() {
-        return Traceratops.sInstance.mIsSafe && mShouldLog && mLoggerService!=null;
+        return Traceratops.sInstance.mIsSafe && Traceratops.sInstance.mShouldLog && mLoggerService!=null && Traceratops.sInstance.isCompatible();
     }
     
     private String getStackTraceAsString(@NonNull Throwable t) {

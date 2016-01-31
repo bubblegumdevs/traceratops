@@ -61,11 +61,7 @@ public class Ping {
         });
     }
 
-    private void submitStartPing(final PingSession pingSession) {
-        if (!isLogging()) {
-            Traceratops.sInstance.attemptConnection();
-        }
-
+   private void submitStartPing(final PingSession pingSession) {
         if (mLoggerService != null) {
             try {
                 mLoggerService.pingStart(pingSession.timeStart, pingSession.message, pingSession.sessionId);
@@ -87,10 +83,6 @@ public class Ping {
     }
 
     private void submitPing(PingSession pingSession) {
-        if (!isLogging()) {
-            Traceratops.sInstance.attemptConnection();
-        }
-
         if (mLoggerService != null) {
             try {
                 mLoggerService.pingEnd(pingSession.timeStart, pingSession.timeEnd, pingSession.message, pingSession.sessionId);
@@ -156,6 +148,6 @@ public class Ping {
     }
 
     private boolean isLogging() {
-        return Traceratops.sInstance.mIsSafe && mLoggerService!=null;
+        return Traceratops.sInstance.mIsSafe && mLoggerService!=null && Traceratops.sInstance.isCompatible();
     }
 }

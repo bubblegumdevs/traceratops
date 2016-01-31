@@ -72,7 +72,7 @@ public class Debug {
     }
 
     private boolean isLogging() {
-        return Traceratops.sInstance.mIsSafe && mLoggerService!=null;
+        return Traceratops.sInstance.mIsSafe && Traceratops.sInstance.mShouldLog && mLoggerService!=null && Traceratops.sInstance.isCompatible();
     }
 
 }

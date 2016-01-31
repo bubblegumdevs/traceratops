@@ -26,4 +26,6 @@ interface ILoggerService {
     void pingStart(long startTime, String message, int token);
     void pingEnd(long startTime, long endTime, String message, int token);
     void pingTick(long timetamp, int sizeInBytes, String message, int token);
+    int checkVersion(int sdkVersion);
+    void reportError(int errorCode);
 }

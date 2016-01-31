@@ -18,6 +18,7 @@ package com.bubblegum.traceratops.app;
 
 import android.app.Activity;
 import android.app.Application;
+import android.app.Service;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 
@@ -31,6 +32,8 @@ public class TraceratopsApplication extends Application {
     List<BaseEntry> mEntryList = new ArrayList<>();
     List<OnEntryListUpdatedListener> mOnEntryListUpdatedListeners = new ArrayList<>();
 
+    private int errorCode = -1;
+
     private static final int ENTRY_ACTION_ADDED = 0;
     private static final int ENTRY_ACTION_CLEARED = 1;
 
@@ -40,6 +43,14 @@ public class TraceratopsApplication extends Application {
     public void onCreate() {
         super.onCreate();
         mMainThreadHandler = new Handler(getMainLooper());
+    }
+
+    public void setErrorCode(int errorCode) {
+        this.errorCode = errorCode;
+    }
+
+    public int getErrorCode() {
+        return errorCode;
     }
 
     public static TraceratopsApplication from(Application application) {
@@ -60,6 +71,13 @@ public class TraceratopsApplication extends Application {
     public static TraceratopsApplication from(Activity activity) {
         if(activity!=null) {
             return from(activity.getApplication());
+        }
+        return null;
+    }
+
+    public static TraceratopsApplication from(Service service) {
+        if(service!=null) {
+            return from(service.getApplication());
         }
         return null;
     }

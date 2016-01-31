@@ -31,6 +31,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 
 import com.bubblegum.traceratops.ILoggerService;
+import com.bubblegum.traceratops.app.BuildConfig;
 import com.bubblegum.traceratops.app.R;
 import com.bubblegum.traceratops.app.TraceratopsApplication;
 import com.bubblegum.traceratops.app.model.CrashEntry;
@@ -47,12 +48,18 @@ import java.util.concurrent.Executors;
 public class LoggerService extends Service {
     private static final String TAG = "bubblegum_loggerservice";
 
+    public static final String ACTION_ERROR = "com.bubblegum.traceratops.app.SERVICE_ERROR";
+    public static final String EXTRA_ERROR_CODE = ":traceratops:loggerService:errorCode";
+
+    private static final int MIN_SDK_VERSION = 1;
+
     ExecutorService mExecutorService = Executors.newFixedThreadPool(1);
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         showPersistentNotification();
+        TraceratopsApplication.from(this).setErrorCode(-1);
         return mBinder;
     }
 
@@ -102,6 +109,22 @@ public class LoggerService extends Service {
         @Override
         public void pingTick(long timetamp, int sizeInBytes, String message, int token) throws RemoteException {
             queuePingTickTask(timetamp, sizeInBytes, message, token);
+        }
+
+        @Override
+        public int checkVersion(int sdkVersion) throws RemoteException {
+            if(sdkVersion < MIN_SDK_VERSION) {
+                return -1;
+            }
+            return BuildConfig.VERSION_CODE;
+        }
+
+        @Override
+        public void reportError(int errorCode) throws RemoteException {
+            Intent errorIntent = new Intent(ACTION_ERROR);
+            errorIntent.putExtra(EXTRA_ERROR_CODE, errorCode);
+            sendBroadcast(errorIntent);
+            TraceratopsApplication.from(LoggerService.this).setErrorCode(errorCode);
         }
     };
 
@@ -283,5 +306,11 @@ public class LoggerService extends Service {
     private void hidePersistentNotification() {
         NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         nm.cancel(R.id.traceratops_running_id);
+    }
+
+    public static final class ERROR_CODES {
+        public static final int ERROR_CODE_APP_OUTDATED = 1;
+        public static final int ERROR_CODE_SDK_OUTDATED = 2;
+        public static final int ERROR_CODE_SIGNATURE_VERIFICATION_FAILED = 3;
     }
 }

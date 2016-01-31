@@ -18,17 +18,18 @@ package com.bubblegum.traceratops.app.ui.adapters.plugins;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.support.v4.content.ContextCompat;
-import android.widget.Toast;
 
 import com.bubblegum.traceratops.app.LogStub;
 import com.bubblegum.traceratops.app.R;
-import com.bubblegum.traceratops.app.model.CrashEntry;
 import com.bubblegum.traceratops.app.model.LogEntry;
+import com.bubblegum.traceratops.app.ui.activities.BaseActivity;
 import com.bubblegum.traceratops.app.ui.utils.CircularTextDrawable;
 
 public class LogAdapterPlugin extends AbsAdapterPlugin<LogEntry> {
+
+    public LogAdapterPlugin(BaseActivity activity) {
+        super(activity);
+    }
 
     @Override
     public Class<LogEntry> getSupportedClass() {
@@ -52,13 +53,13 @@ public class LogAdapterPlugin extends AbsAdapterPlugin<LogEntry> {
 
     @Override
     public Drawable getImageDrawable(LogEntry entry) {
-        return new CircularTextDrawable(LogStub.getTextFromLevel(entry.level), LogStub.getColorForLevel(getContext(), entry.level));
+        return new CircularTextDrawable(LogStub.getTextFromLevel(entry.level), LogStub.getColorForLevel(getBaseActivity(), entry.level));
     }
 
     @Override
     protected void onPrimaryButtonClicked(LogEntry entry) {
         copyText(entry.description);
-        Toast.makeText(getContext(), R.string.log_entry_copied_to_clipboard, Toast.LENGTH_LONG).show();
+        getBaseActivity().showSnackbarOrToast(R.string.log_entry_copied_to_clipboard, BaseActivity.LENGTH_LONG, null, null);
     }
 
     @Override
@@ -67,14 +68,14 @@ public class LogAdapterPlugin extends AbsAdapterPlugin<LogEntry> {
     }
 
     private void copyText(String textToBeCopied) {
-        android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+        android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getBaseActivity().getSystemService(Context.CLIPBOARD_SERVICE);
         android.content.ClipData clip = android.content.ClipData.newPlainText("Traceratops",textToBeCopied);
         clipboard.setPrimaryClip(clip);
     }
 
     @Override
     protected String getPrimaryActionText() {
-        return getContext().getString(R.string.copy);
+        return getBaseActivity().getString(R.string.copy);
     }
 
     @Override

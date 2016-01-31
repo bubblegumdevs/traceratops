@@ -25,9 +25,11 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.support.annotation.Nullable;
 
 import com.bubblegum.traceratops.ILoggerService;
+import com.bubblegum.traceratops.sdk.BuildConfig;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;
@@ -36,7 +38,12 @@ import java.util.concurrent.Executors;
 public class Traceratops implements ServiceConnection {
 
     boolean mIsSafe = false;
+    boolean mAppOutdated = false;
+    boolean mSDKOutdated = false;
+    boolean mShouldLog;
     private static final String TAG = "bubblegum_traceratops";
+
+    static final int MIN_APP_VERSION = 1;
 
     private boolean mHasWarnedNotLogging = false;
 
@@ -51,9 +58,29 @@ public class Traceratops implements ServiceConnection {
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         mLoggerService = ILoggerService.Stub.asInterface(service);
+        mAppOutdated = false;
+        mSDKOutdated = false;
+        try {
+            int appVersion = mLoggerService.checkVersion(BuildConfig.VERSION_CODE);
+            if(appVersion < 0) {
+                mSDKOutdated = true;
+            } else if(appVersion > 0 && appVersion < MIN_APP_VERSION) {
+                mAppOutdated = true;
+            }
+        } catch (RemoteException ignored) {}
+        if(!isCompatible()) {
+            reportError();
+            unbind();
+            mLoggerService = null;
+            if (mLoggerServiceConnectionCallbacks != null) {
+                mLoggerServiceConnectionCallbacks.onLoggerServiceException(new IllegalArgumentException(mAppOutdated?"Please install the latest version of Traceratops.":"This version of Traceratops needs a newer SDK. Please update the SDK."));
+            }
+            return;
+        }
         if(mWeakContext!=null && mWeakContext.get()!=null) {
             mIsSafe = performSignatureCheck(mWeakContext.get(), name);
             if(!mIsSafe) {
+                reportError();
                 unbind();
                 mLoggerService = null;
                 if (mLoggerServiceConnectionCallbacks != null) {
@@ -95,6 +122,24 @@ public class Traceratops implements ServiceConnection {
         }
     }
 
+    private void reportError() {
+        try {
+            int errorCode = 0;
+            if(!mIsSafe) {
+                errorCode = ERROR_CODES.ERROR_CODE_SIGNATURE_VERIFICATION_FAILED;
+            }
+            if(mAppOutdated) {
+                errorCode = ERROR_CODES.ERROR_CODE_APP_OUTDATED;
+            }
+            if(mSDKOutdated) {
+                errorCode = ERROR_CODES.ERROR_CODE_SDK_OUTDATED;
+            }
+            if (mLoggerService != null) {
+                mLoggerService.reportError(errorCode);
+            }
+        } catch (Throwable ignored) {}
+    }
+
     private void setContextWeakly(Context context) {
         mWeakContext = new WeakReference<>(context);
     }
@@ -112,6 +157,11 @@ public class Traceratops implements ServiceConnection {
             mWeakContext.get().bindService(binderIntent, sInstance, Context.BIND_AUTO_CREATE);
         }
     }
+
+    public void setShouldLog(boolean shouldLog) {
+        mShouldLog = shouldLog;
+    }
+
 
     public static class Builder {
 
@@ -135,7 +185,7 @@ public class Traceratops implements ServiceConnection {
         }
 
         public Builder shouldLog(boolean shouldLog) {
-            mLogInstance.setShouldLog(shouldLog);
+            mInstance.setShouldLog(shouldLog);
             return this;
         }
 
@@ -179,5 +229,15 @@ public class Traceratops implements ServiceConnection {
         void onLoggerServiceDisconnected();
         void onLoggerServiceException(Throwable t);
 
+    }
+
+    boolean isCompatible() {
+        return !mAppOutdated && !mSDKOutdated;
+    }
+
+    private static final class ERROR_CODES {
+        public static final int ERROR_CODE_APP_OUTDATED = 1;
+        public static final int ERROR_CODE_SDK_OUTDATED = 2;
+        public static final int ERROR_CODE_SIGNATURE_VERIFICATION_FAILED = 3;
     }
 }

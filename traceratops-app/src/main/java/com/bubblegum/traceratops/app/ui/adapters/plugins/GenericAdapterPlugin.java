@@ -19,8 +19,13 @@ package com.bubblegum.traceratops.app.ui.adapters.plugins;
 import android.graphics.drawable.Drawable;
 
 import com.bubblegum.traceratops.app.model.BaseEntry;
+import com.bubblegum.traceratops.app.ui.activities.BaseActivity;
 
 public class GenericAdapterPlugin extends AbsAdapterPlugin<BaseEntry> {
+
+    public GenericAdapterPlugin(BaseActivity activity) {
+        super(activity);
+    }
 
     @Override
     public Class<BaseEntry> getSupportedClass() {

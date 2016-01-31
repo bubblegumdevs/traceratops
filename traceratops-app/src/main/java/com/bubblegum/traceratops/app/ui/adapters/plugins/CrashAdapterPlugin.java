@@ -21,11 +21,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.os.Bundle;
-import android.widget.Toast;
 
 import com.bubblegum.traceratops.app.R;
 import com.bubblegum.traceratops.app.model.CrashEntry;
+import com.bubblegum.traceratops.app.ui.activities.BaseActivity;
 import com.bubblegum.traceratops.app.ui.activities.CrashDetailsActivity;
 import com.bubblegum.traceratops.app.ui.fragments.CrashDetailsFragment;
 import com.bubblegum.traceratops.app.ui.utils.CircularTextDrawable;
@@ -33,6 +32,10 @@ import com.bubblegum.traceratops.app.ui.utils.CircularTextDrawable;
 public class CrashAdapterPlugin extends AbsAdapterPlugin <CrashEntry> {
 
     private Drawable mDrawable = new CircularTextDrawable("!", Color.RED);
+
+    public CrashAdapterPlugin(BaseActivity activity) {
+        super(activity);
+    }
 
     @Override
     public Class<CrashEntry> getSupportedClass() {
@@ -61,31 +64,31 @@ public class CrashAdapterPlugin extends AbsAdapterPlugin <CrashEntry> {
 
     @Override
     protected void onPrimaryButtonClicked(CrashEntry entry) {
-        Intent crashIntent = new Intent(getContext(), CrashDetailsActivity.class);
+        Intent crashIntent = new Intent(getBaseActivity(), CrashDetailsActivity.class);
         crashIntent.putExtra(CrashDetailsFragment.EXTRA_CRASH_MSG, entry.message);
         crashIntent.putExtra(CrashDetailsFragment.EXTRA_CRASH_STACKTRACE, entry.stacktrace);
-        getContext().startActivity(crashIntent);
+        getBaseActivity().startActivity(crashIntent);
     }
 
     @Override
     protected void onSecondaryButtonClicked(CrashEntry entry) {
         copyText(entry.stacktrace);
-        Toast.makeText(getContext(), R.string.crash_entry_copied_to_clipboard, Toast.LENGTH_LONG).show();
+        getBaseActivity().showSnackbarOrToast(R.string.crash_entry_copied_to_clipboard, BaseActivity.LENGTH_LONG, null, null);
     }
 
     private void copyText(String textToBeCopied) {
-        android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+        android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getBaseActivity().getSystemService(Context.CLIPBOARD_SERVICE);
         android.content.ClipData clip = android.content.ClipData.newPlainText("Traceratops",textToBeCopied);
         clipboard.setPrimaryClip(clip);
     }
 
     @Override
     protected String getPrimaryActionText() {
-        return getContext().getString(R.string.view);
+        return getBaseActivity().getString(R.string.view);
     }
 
     @Override
     protected String getSecondaryActionText() {
-        return getContext().getString(R.string.copy);
+        return getBaseActivity().getString(R.string.copy);
     }
 }

@@ -16,20 +16,17 @@
 
 package com.bubblegum.traceratops.app.ui.adapters;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bubblegum.traceratops.app.R;
 import com.bubblegum.traceratops.app.model.BaseEntry;
-import com.bubblegum.traceratops.app.ui.adapters.filters.BaseEntryFilter;
+import com.bubblegum.traceratops.app.ui.activities.BaseActivity;
 import com.bubblegum.traceratops.app.ui.adapters.plugins.AbsAdapterPlugin;
 import com.bubblegum.traceratops.app.ui.adapters.plugins.GenericAdapterPlugin;
 
@@ -40,14 +37,14 @@ public class BaseEntryAdapter extends RecyclerView.Adapter {
 
     List<AbsAdapterPlugin<? extends BaseEntry>> mAdapterPlugins = new ArrayList<>();
 
-    private final Context mContext;
+    private final BaseActivity mBaseActivity;
     private final List<BaseEntry> mEntries;
     private final List<BaseEntry> mFilteredEntries;
 
     private int selectedIndex = -1;
 
-    public BaseEntryAdapter(@NonNull Context context, @NonNull List<BaseEntry> entries) {
-        mContext = context;
+    public BaseEntryAdapter(@NonNull BaseActivity baseActivity, @NonNull List<BaseEntry> entries) {
+        mBaseActivity = baseActivity;
         mEntries = entries;
         mFilteredEntries = mEntries;
     }
@@ -96,7 +93,7 @@ public class BaseEntryAdapter extends RecyclerView.Adapter {
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(mContext).inflate(R.layout.row_base_entry, parent, false);
+        View view = LayoutInflater.from(mBaseActivity).inflate(R.layout.row_base_entry, parent, false);
         return new EntryViewHolder(view);
     }
 
@@ -106,7 +103,7 @@ public class BaseEntryAdapter extends RecyclerView.Adapter {
             ((EntryViewHolder) holder).index = position;
             BaseEntry entry = mFilteredEntries.get(position);
             AbsAdapterPlugin<? extends BaseEntry> plugin = findPluginForClass(entry.getClass());
-            plugin.bind(mContext, entry, (EntryViewHolder) holder, this);
+            plugin.bind(entry, (EntryViewHolder) holder, this);
         }
     }
 
@@ -121,7 +118,7 @@ public class BaseEntryAdapter extends RecyclerView.Adapter {
                 return plugin;
             }
         }
-        return new GenericAdapterPlugin();
+        return new GenericAdapterPlugin(mBaseActivity);
     }
 
     public List<BaseEntry> getOriginalEntries() {
