@@ -44,10 +44,20 @@ public class BaseEntryAdapter extends RecyclerView.Adapter {
     private final List<BaseEntry> mEntries;
     private final List<BaseEntry> mFilteredEntries;
 
+    private int selectedIndex = -1;
+
     public BaseEntryAdapter(@NonNull Context context, @NonNull List<BaseEntry> entries) {
         mContext = context;
         mEntries = entries;
         mFilteredEntries = mEntries;
+    }
+
+    public int getSelectedIndex() {
+        return selectedIndex;
+    }
+
+    public void setSelectedIndex(int selectedIndex) {
+        this.selectedIndex = selectedIndex;
     }
 
     public static class EntryViewHolder extends RecyclerView.ViewHolder {
@@ -57,14 +67,25 @@ public class BaseEntryAdapter extends RecyclerView.Adapter {
         public TextView vhTimestampText;
         public ImageView vhIcon;
         public View itemView;
+        public View topSeparator;
+        public View bottomSeparator;
+        public TextView vhPrimaryAction;
+        public TextView vhSecondaryAction;
+        public ViewGroup vhButtonLayout;
+        public int index;
 
         public EntryViewHolder(View itemView) {
             super(itemView);
-            this.itemView = itemView;
+            this.itemView = itemView.findViewById(R.id.item_view);
             vhPrimaryText = (TextView) itemView.findViewById(R.id.row_item_primary_text);
             vhSecondaryText = (TextView) itemView.findViewById(R.id.row_item_secondary_text);
             vhTimestampText = (TextView) itemView.findViewById(R.id.row_item_timestamp_text);
+            vhPrimaryAction = (TextView) itemView.findViewById(R.id.primary_action);
+            vhSecondaryAction = (TextView) itemView.findViewById(R.id.secondary_action);
+            vhButtonLayout = (ViewGroup) itemView.findViewById(R.id.buttons);
             vhIcon = (ImageView) itemView.findViewById(R.id.row_item_icon);
+            topSeparator = itemView.findViewById(R.id.top_separator);
+            bottomSeparator = itemView.findViewById(R.id.bottom_separator);
         }
     }
 
@@ -82,9 +103,10 @@ public class BaseEntryAdapter extends RecyclerView.Adapter {
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if(holder instanceof EntryViewHolder) {
+            ((EntryViewHolder) holder).index = position;
             BaseEntry entry = mFilteredEntries.get(position);
             AbsAdapterPlugin<? extends BaseEntry> plugin = findPluginForClass(entry.getClass());
-            plugin.bind(mContext, entry, (EntryViewHolder) holder);
+            plugin.bind(mContext, entry, (EntryViewHolder) holder, this);
         }
     }
 

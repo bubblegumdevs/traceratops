@@ -16,4 +16,6 @@
     <color name="pingIndicator">#663399</color>
     <color name="pingTick">#8E44AD</color>
 
+    <color name="window_background">#ededed</color>
+
 </resources>

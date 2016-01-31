@@ -54,11 +54,26 @@ public class TLogAdapterPlugin extends AbsAdapterPlugin<TLogEntry> {
     }
 
     @Override
-    public void onItemClick(TLogEntry entry) {
+    protected void onPrimaryButtonClicked(TLogEntry entry) {
         Intent intent = new Intent(getContext(), ObjectDetailsActivity.class);
         intent.putExtra(ObjectDetailsActivity.EXTRA_TLOG_OBJECT, entry.args);
         intent.putExtra(ObjectDetailsActivity.EXTRA_TLOG_TAG, entry.tag);
         intent.putExtra(ObjectDetailsActivity.EXTRA_TLOG_DESCRIPTION, entry.description);
         getContext().startActivity(intent);
+    }
+
+    @Override
+    protected void onSecondaryButtonClicked(TLogEntry entry) {
+
+    }
+
+    @Override
+    protected String getPrimaryActionText() {
+        return getContext().getString(R.string.view);
+    }
+
+    @Override
+    protected String getSecondaryActionText() {
+        return null;
     }
 }
