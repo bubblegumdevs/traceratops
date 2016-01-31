@@ -3,7 +3,7 @@ Traceratops
 
 An Open Source debugging and logging tool for the casual user
 
-![](website/static/sample.png)
+![](traceratops-app/src/main/res/mipmap-xxhdpi/ic_launcher.png)
 
 For more information please check [the wiki][1]
 
@@ -13,7 +13,7 @@ Integration guide
 -----------------
 
 1. Clone a copy of Traceratops app.
-2. Build it using the same key as the key by which you signed your app
+2. Build it using the same key by which you signed your app
 3. Include the following dependency in your Gradle script
 
 ```groovy
@@ -23,27 +23,27 @@ compile 'com.bubblegum.traceratops:traceratops-core:0.1.0'
 
 ```java
 Traceratops.setup(this)
-                .withServiceConnectionCallbacks(new Traceratops.LoggerServiceConnectionCallbacks() {
-                    @Override
-                    public void onLoggerServiceConnected() {
+        .withServiceConnectionCallbacks(new Traceratops.LoggerServiceConnectionCallbacks() {
+            @Override
+            public void onLoggerServiceConnected() {
 
-                    }
+            }
 
-                    @Override
-                    public void onLoggerServiceDisconnected() {
+            @Override
+            public void onLoggerServiceDisconnected() {
 
-                    }
+            }
 
-                    @Override
-                    public void onLoggerServiceException(Throwable t) {
+            @Override
+            public void onLoggerServiceException(Throwable t) {
 
-                    }
-                })
-                .withLogProxy(LogProxies.EMPTY_LOG_PROXY)
-                .shouldLog(true)
-                .handleCrashes(this)
-                .connect();
-    }
+            }
+        })
+        .withLogProxy(LogProxies.EMPTY_LOG_PROXY)
+        .shouldLog(true)
+        .handleCrashes(this)
+        .connect();
+      }
 ```
 
 5. Use ```com.bubblegum.traceratops.sdk.client.Log``` class to record logs. Optionally, you can replace all instances of ```android.util.Log``` import statements with this one.
