@@ -27,7 +27,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:background="@color/colorPrimary"
-        android:text="Click here to trigger log event" />
+        android:text="Click here to trigger log event"
+        android:textColor="@android:color/white"/>
 
 
     <Button
@@ -36,7 +37,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:background="@color/colorPrimary"
-        android:text="Click here to trigger crash" />
+        android:text="Click here to trigger crash"
+        android:textColor="@android:color/white"/>
 
     <LinearLayout
         android:layout_marginTop="16dp"
@@ -62,7 +64,50 @@
             android:layout_alignParentTop="true"
             android:layout_centerInParent="true"
             android:background="@color/colorPrimary"
-            android:text="Perform benchmark" />
+            android:text="Perform benchmark"
+            android:textColor="@android:color/white"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/simulate_start_ping_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="16dp"
+            android:background="@color/colorPrimary"
+            android:text="Start a ping"
+            android:textColor="@android:color/white"/>
+
+        <Button
+            android:id="@+id/simulate_end_ping_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="16dp"
+            android:background="@color/colorPrimary"
+            android:text="End the ping session"
+            android:textColor="@android:color/white"/>
+
+        <Button
+            android:id="@+id/simulate_tick_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="16dp"
+            android:background="@color/colorPrimary"
+            android:text="Tick"
+            android:textColor="@android:color/white"/>
     </LinearLayout>
     
     <ProgressBar

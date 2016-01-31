@@ -31,6 +31,7 @@ import com.bubblegum.traceratops.demo.dummy.TLogBenchmarkDemoObject;
 import com.bubblegum.traceratops.demo.dummy.TLogDemoObject;
 import com.bubblegum.traceratops.sdk.client.Debug;
 import com.bubblegum.traceratops.sdk.client.Log;
+import com.bubblegum.traceratops.sdk.client.Ping;
 import com.bubblegum.traceratops.sdk.client.TLog;
 
 public class MainActivity extends AppCompatActivity {
@@ -42,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
     public static final class DebugKeys {
         public static final String DEBUG_KEY_SIMPLE_DEBUG_STRING = ":simpleDebugString";
     }
+
+    private Ping.PingSession mPingSession = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +84,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        setupPingButtons();
+
         TextView simpleDebugString = (TextView) findViewById(R.id.simple_debug_string);
         simpleDebugString.setText(Debug.getString(DebugKeys.DEBUG_KEY_SIMPLE_DEBUG_STRING, DEFAULT_SIMPLE_DEBUG_STRING));
     }
@@ -99,5 +104,41 @@ public class MainActivity extends AppCompatActivity {
         long endTime = System.currentTimeMillis();
         long elapsed = endTime - startTime;
         Toast.makeText(this, "Elapsed time for " + count + " passes: " + elapsed + " milliseconds", Toast.LENGTH_LONG).show();
+    }
+
+    private void setupPingButtons() {
+        Button startPingButton = (Button) findViewById(R.id.simulate_start_ping_button);
+        startPingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mPingSession = Ping.startSession(getString(R.string.ping_message_test));
+            }
+        });
+
+        Button endPingButton = (Button) findViewById(R.id.simulate_end_ping_button);
+        endPingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mPingSession == null) {
+                    Toast.makeText(MainActivity.this, R.string.ping_end_failed_error_toast, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Ping.endSession(mPingSession);
+                mPingSession = null;
+            }
+        });
+
+        Button tickButton = (Button) findViewById(R.id.simulate_tick_button);
+        tickButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mPingSession == null) {
+                    Toast.makeText(MainActivity.this, R.string.ping_end_failed_error_toast, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Ping.tick(mPingSession);
+                Ping.tick(mPingSession, 16);
+            }
+        });
     }
 }

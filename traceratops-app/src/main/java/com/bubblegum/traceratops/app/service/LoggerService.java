@@ -86,22 +86,22 @@ public class LoggerService extends Service {
 
         @Override
         public void crash(String stacktrace, String message) throws RemoteException {
-            queueCrash(stacktrace, message);
+            queueCrashTask(stacktrace, message);
         }
 
         @Override
         public void pingStart(long startTime, String message, int token) throws RemoteException {
-
+            queuePingStartTask(startTime, message, token);
         }
 
         @Override
         public void pingEnd(long startTime, long endTime, String message, int token) throws RemoteException {
-
+            queuePingEndTask(startTime, endTime, message, token);
         }
 
         @Override
-        public void pingTick(long timetamp, int sizeInBytes, int token) throws RemoteException {
-
+        public void pingTick(long timetamp, int sizeInBytes, String message, int token) throws RemoteException {
+            queuePingTickTask(timetamp, sizeInBytes, message, token);
         }
     };
 
@@ -113,7 +113,7 @@ public class LoggerService extends Service {
         mExecutorService.submit(new LogTask(tag, message, stackTrace, level, System.currentTimeMillis()));
     }
 
-    private void queueCrash(String stacktrace, String message) {
+    private void queueCrashTask(String stacktrace, String message) {
         mExecutorService.submit(new CrashTask(message, stacktrace, System.currentTimeMillis()));
 
         /* Crash notification:
@@ -135,6 +135,18 @@ public class LoggerService extends Service {
                 .setAutoCancel(true)
                 .setContentIntent(contentIntent);
         notifMan.notify(R.id.traceratops_crash_id, builder.build());
+    }
+
+    private void queuePingStartTask(long timeStart, String message, int token) {
+        mExecutorService.submit(new PingTask(timeStart, message, token, System.currentTimeMillis()));
+    }
+
+    private void queuePingEndTask(long timeStart, long timeEnd, String message, int token) {
+        mExecutorService.submit(new PingTask(timeStart, timeEnd, message, token, System.currentTimeMillis()));
+    }
+
+    private void queuePingTickTask(long tickTimestamp, int sizeInBytes, String message, int token) {
+        mExecutorService.submit(new PingTask(tickTimestamp, sizeInBytes, message, token));
     }
 
     private class LogTask implements Runnable {
@@ -235,18 +247,20 @@ public class LoggerService extends Service {
          * @param sizeInBytes Size of data sent / received in bytes
          * @param token Token associated with the ping session
          */
-        public PingTask(long tickTimestamp, int sizeInBytes, int token) {
+        public PingTask(long tickTimestamp, int sizeInBytes, String message, int token) {
             pingEntry = new PingEntry();
             pingEntry.timestamp = tickTimestamp;
             pingEntry.sizeInBytes = sizeInBytes;
             pingEntry.token = token;
             pingEntry.timestampBegin = 0;
             pingEntry.timestampEnd = 0;
+            pingEntry.message = message;
         }
 
         @Override
         public void run() {
-
+            TraceratopsApplication.from(getApplication()).addEntry(pingEntry);
+            // TODO add database insertion code
         }
     }
 

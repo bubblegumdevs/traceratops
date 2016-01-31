@@ -33,6 +33,7 @@ import com.bubblegum.traceratops.app.ui.adapters.BaseEntryAdapter;
 import com.bubblegum.traceratops.app.ui.adapters.filters.LogLevelFilter;
 import com.bubblegum.traceratops.app.ui.adapters.plugins.CrashAdapterPlugin;
 import com.bubblegum.traceratops.app.ui.adapters.plugins.LogAdapterPlugin;
+import com.bubblegum.traceratops.app.ui.adapters.plugins.PingAdapterPlugin;
 import com.bubblegum.traceratops.app.ui.adapters.plugins.TLogAdapterPlugin;
 
 import java.util.List;
@@ -60,6 +61,7 @@ public class LoggerFragment extends BaseFragment implements TraceratopsApplicati
         setupFilters(mEntryAdapter);
         mEntryAdapter.addAdapterPlugin(new LogAdapterPlugin())
                 .addAdapterPlugin(new TLogAdapterPlugin())
+                .addAdapterPlugin(new PingAdapterPlugin())
                 .addAdapterPlugin(new CrashAdapterPlugin());
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         llm.setOrientation(LinearLayoutManager.VERTICAL);

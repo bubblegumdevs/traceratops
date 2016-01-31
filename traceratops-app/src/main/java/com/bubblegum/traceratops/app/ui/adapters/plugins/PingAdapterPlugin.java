@@ -19,14 +19,16 @@ package com.bubblegum.traceratops.app.ui.adapters.plugins;
 
 
 import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 
 import com.bubblegum.traceratops.app.R;
 import com.bubblegum.traceratops.app.model.PingEntry;
+import com.bubblegum.traceratops.app.ui.utils.CircularTextDrawable;
 
 public class PingAdapterPlugin extends AbsAdapterPlugin<PingEntry> {
     @Override
     public Class<PingEntry> getSupportedClass() {
-        return null;
+        return PingEntry.class;
     }
 
     @Override
@@ -61,6 +63,9 @@ public class PingAdapterPlugin extends AbsAdapterPlugin<PingEntry> {
         if (entry.message != null) {
             if (entry.timestampBegin == 0 && entry.timestampEnd == 0) {
                 // Tick
+                if (entry.sizeInBytes != 0) {
+                    return "Tick: " + entry.sizeInBytes + " bytes received";
+                }
                 return getContext().getString(R.string.ping_tick);
             } else if (entry.timestampEnd == 0) {
                 // Unfinished ping
@@ -68,6 +73,10 @@ public class PingAdapterPlugin extends AbsAdapterPlugin<PingEntry> {
             } else {
                 // Finished ping
                 return getContext().getString(R.string.ping_end);
+            }
+        } else {
+            if (entry.sizeInBytes != 0) {
+                return "" + entry.sizeInBytes + " bytes received";
             }
         }
         return null;
@@ -80,7 +89,10 @@ public class PingAdapterPlugin extends AbsAdapterPlugin<PingEntry> {
 
     @Override
     public Drawable getImageDrawable(PingEntry entry) {
-        return null;
+        if (entry.timestampBegin == 0 && entry.timestampEnd == 0) {
+            return new CircularTextDrawable("P", ContextCompat.getColor(getContext(), R.color.pingTick));
+        }
+        return new CircularTextDrawable("P", ContextCompat.getColor(getContext(), R.color.pingIndicator));
     }
 
     @Override

@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">TracerDemo</string>
+
+    <!-- Ping message -->
+    <string name="ping_message_test">Test: Ping</string>
+
+    <!-- Error toasts -->
+    <string name="ping_end_failed_error_toast">No active ping session found.</string>
+
 </resources>

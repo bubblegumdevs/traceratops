@@ -4,11 +4,16 @@
     <color name="colorPrimaryDark">#036045</color>
     <color name="colorAccent">#f1c40f</color>
 
+    <!-- Log level color codes -->
     <color name="logLevelVerbose">#7f8c8d</color>
     <color name="logLevelDebug">#4f5e5c</color>
     <color name="logLevelInfo">#2c3e50</color>
     <color name="logLevelWarning">#f1c40f</color>
     <color name="logLevelError">#e74c3c</color>
     <color name="logLevelWTF">#c0392b</color>
+
+    <!-- Ping color codes -->
+    <color name="pingIndicator">#663399</color>
+    <color name="pingTick">#8E44AD</color>
 
 </resources>
