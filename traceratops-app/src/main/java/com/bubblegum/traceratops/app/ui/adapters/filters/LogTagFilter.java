@@ -23,8 +23,8 @@ import java.util.Locale;
 
 public class LogTagFilter extends BaseEntryFilter<LogEntry>{
 
-    public LogTagFilter(BaseEntryAdapter adapter) {
-        super(adapter);
+    public LogTagFilter(CharSequence constraint) {
+        super(constraint);
     }
 
     @Override

@@ -16,45 +16,22 @@
 
 package com.bubblegum.traceratops.app.ui.adapters.filters;
 
-import android.widget.Filter;
-
 import com.bubblegum.traceratops.app.model.BaseEntry;
-import com.bubblegum.traceratops.app.ui.adapters.BaseEntryAdapter;
 
-import java.util.ArrayList;
-import java.util.List;
+public abstract class BaseEntryFilter<T extends BaseEntry> {
 
-public abstract class BaseEntryFilter<T extends BaseEntry> extends Filter {
+    CharSequence constraint;
 
-    private final BaseEntryAdapter mBaseEntryAdapter;
-
-    public BaseEntryFilter(BaseEntryAdapter adapter) {
-        mBaseEntryAdapter = adapter;
+    public BaseEntryFilter(CharSequence constraint) {
+        this.constraint = constraint;
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    protected FilterResults performFiltering(CharSequence constraint) {
-        FilterResults results = new FilterResults();
-        final List<BaseEntry> preFilter = mBaseEntryAdapter.getFilteredEntries();
-        final List<BaseEntry> postFilter = new ArrayList<>();
-        for(BaseEntry entry : preFilter) {
-            if(entry.getClass() == getSupportedClass()) {
-                if (!shouldFilterOut((T) entry, constraint)) {
-                    postFilter.add(entry);
-                }
-            }
+    @SuppressWarnings("unchecked") // handled case
+    public boolean shouldFilterOut(BaseEntry entry) {
+        if(getSupportedClass().isAssignableFrom(entry.getClass())) {
+            return shouldFilterOut((T) entry, constraint);
         }
-        results.values = postFilter;
-        return results;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    protected void publishResults(CharSequence constraint, FilterResults results) {
-        mBaseEntryAdapter.getFilteredEntries().clear();
-        mBaseEntryAdapter.getFilteredEntries().addAll((List<BaseEntry>)results.values);
-        mBaseEntryAdapter.notifyDataSetChanged();
+        return true;
     }
 
     protected abstract boolean shouldFilterOut(T entry, CharSequence constraint);

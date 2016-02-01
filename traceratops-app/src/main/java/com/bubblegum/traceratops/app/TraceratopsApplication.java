@@ -23,6 +23,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 
 import com.bubblegum.traceratops.app.model.BaseEntry;
+import com.bubblegum.traceratops.app.ui.adapters.filters.BaseEntryFilter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,12 +31,15 @@ import java.util.List;
 public class TraceratopsApplication extends Application {
 
     List<BaseEntry> mEntryList = new ArrayList<>();
+    List<BaseEntry> mFilteredEntryList = new ArrayList<>();
     List<OnEntryListUpdatedListener> mOnEntryListUpdatedListeners = new ArrayList<>();
+
+    List<BaseEntryFilter> filters = new ArrayList<>();
 
     private int errorCode = -1;
 
-    private static final int ENTRY_ACTION_ADDED = 0;
-    private static final int ENTRY_ACTION_CLEARED = 1;
+    private static final int ENTRY_ACTION_ADDED = 1;
+    private static final int ENTRY_ACTION_CLEARED = 2;
 
     private Handler mMainThreadHandler;
 
@@ -83,11 +87,21 @@ public class TraceratopsApplication extends Application {
     }
 
     public List<BaseEntry> getEntries() {
-        return mEntryList;
+        return mFilteredEntryList;
     }
 
     public void addEntry(@NonNull BaseEntry entry) {
         mEntryList.add(0, entry);
+        boolean shouldFilterOut = false;
+        for(BaseEntryFilter filter : filters) {
+            shouldFilterOut = filter.shouldFilterOut(entry);
+            if(shouldFilterOut) {
+                break;
+            }
+        }
+        if(!shouldFilterOut) {
+            mFilteredEntryList.add(0, entry);
+        }
         android.util.Log.d("TRACERT", "Log added");
         notifyListeners(entry, ENTRY_ACTION_ADDED);
     }
@@ -95,7 +109,12 @@ public class TraceratopsApplication extends Application {
     public void notifyListeners(final BaseEntry entry, int action) {
         for(final OnEntryListUpdatedListener listener : mOnEntryListUpdatedListeners) {
             if(listener!=null) {
-                listener.onEntryListUpdated(mEntryList);
+                runOnMainThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onEntryListUpdated(mEntryList);
+                    }
+                });
                 switch (action) {
                     case ENTRY_ACTION_ADDED:
                         runOnMainThread(new Runnable() {
@@ -127,13 +146,35 @@ public class TraceratopsApplication extends Application {
 
     public void clearEntries() {
         mEntryList.clear();
-
+        mFilteredEntryList.clear();
     }
 
     public interface OnEntryListUpdatedListener {
         void onEntryListUpdated(List<BaseEntry> mEntryList);
         void onEntryAdded(BaseEntry newEntry);
         void onEntriesCleared();
+    }
+
+    public void addFilter(BaseEntryFilter filter) {
+        filters.add(filter);
+        List<BaseEntry> entriesToBeRemoved = new ArrayList<>();
+        for(int i = 0; i < mFilteredEntryList.size(); i++) {
+            BaseEntry entry = mFilteredEntryList.get(i);
+            if(filter.shouldFilterOut(entry)) {
+                entriesToBeRemoved.add(0, entry);
+            }
+        }
+        for(BaseEntry entry : entriesToBeRemoved) {
+            mFilteredEntryList.remove(entry);
+        }
+        notifyListeners(null, 0);
+    }
+
+    public void clearFilters() {
+        filters.clear();
+        mFilteredEntryList.clear();
+        mFilteredEntryList.addAll(mEntryList);
+        notifyListeners(null, 0);
     }
 
 }

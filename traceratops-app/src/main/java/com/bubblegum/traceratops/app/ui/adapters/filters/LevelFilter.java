@@ -16,22 +16,27 @@
 
 package com.bubblegum.traceratops.app.ui.adapters.filters;
 
+import com.bubblegum.traceratops.app.model.BaseEntry;
 import com.bubblegum.traceratops.app.model.LogEntry;
+import com.bubblegum.traceratops.app.model.TLogEntry;
 import com.bubblegum.traceratops.app.ui.adapters.BaseEntryAdapter;
 
-public class LogLevelFilter extends BaseEntryFilter<LogEntry> {
+public class LevelFilter extends BaseEntryFilter<BaseEntry> {
 
-    public LogLevelFilter(BaseEntryAdapter adapter) {
-        super(adapter);
+    public LevelFilter(int constraint) {
+        super(String.valueOf(constraint));
     }
 
     @Override
-    protected boolean shouldFilterOut(LogEntry entry, CharSequence constraint) {
-        return entry.level < Integer.parseInt(constraint.toString());
+    protected boolean shouldFilterOut(BaseEntry entry, CharSequence constraint) {
+        if(entry instanceof LogEntry) {
+            return ((LogEntry)entry).level < Integer.parseInt(constraint.toString());
+        }
+        return true;
     }
 
     @Override
-    protected Class<LogEntry> getSupportedClass() {
-        return LogEntry.class;
+    protected Class<BaseEntry> getSupportedClass() {
+        return BaseEntry.class;
     }
 }

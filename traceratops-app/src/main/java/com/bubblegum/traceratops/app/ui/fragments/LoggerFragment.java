@@ -16,20 +16,25 @@
 
 package com.bubblegum.traceratops.app.ui.fragments;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.bubblegum.traceratops.app.LogStub;
 import com.bubblegum.traceratops.app.R;
 import com.bubblegum.traceratops.app.TraceratopsApplication;
 import com.bubblegum.traceratops.app.model.BaseEntry;
 import com.bubblegum.traceratops.app.ui.activities.BaseActivity;
 import com.bubblegum.traceratops.app.ui.adapters.BaseEntryAdapter;
-import com.bubblegum.traceratops.app.ui.adapters.filters.LogLevelFilter;
+import com.bubblegum.traceratops.app.ui.adapters.filters.LevelFilter;
 import com.bubblegum.traceratops.app.ui.adapters.plugins.CrashAdapterPlugin;
 import com.bubblegum.traceratops.app.ui.adapters.plugins.LogAdapterPlugin;
 import com.bubblegum.traceratops.app.ui.adapters.plugins.PingAdapterPlugin;
@@ -41,11 +46,6 @@ public class LoggerFragment extends BaseFragment implements TraceratopsApplicati
 
     RecyclerView mRecyclerView;
     BaseEntryAdapter mEntryAdapter;
-    Filters mFilters = new Filters();
-
-    private class Filters {
-        public LogLevelFilter logLevelFilter;
-    }
 
     @Nullable
     @Override
@@ -58,7 +58,6 @@ public class LoggerFragment extends BaseFragment implements TraceratopsApplicati
         mRecyclerView = (RecyclerView) view.findViewById(R.id.logger_recycler_view);
         BaseActivity activity = (BaseActivity) getActivity();
         mEntryAdapter = new BaseEntryAdapter(activity, TraceratopsApplication.from(getActivity()).getEntries());
-        setupFilters(mEntryAdapter);
         mEntryAdapter.addAdapterPlugin(new LogAdapterPlugin(activity))
                 .addAdapterPlugin(new TLogAdapterPlugin(activity))
                 .addAdapterPlugin(new PingAdapterPlugin(activity))
@@ -67,31 +66,27 @@ public class LoggerFragment extends BaseFragment implements TraceratopsApplicati
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(llm);
         mRecyclerView.setAdapter(mEntryAdapter);
-//        Button button = (Button) view.findViewById(R.id.test);
-//        button.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                mFilters.logLevelFilter.filter(String.valueOf(LogStub.E));
-//            }
-//        });
+        setHasOptionsMenu(true);
         super.onViewCreated(view, savedInstanceState);
-    }
-
-    private void setupFilters(BaseEntryAdapter baseEntryAdapter) {
-        mFilters.logLevelFilter = new LogLevelFilter(baseEntryAdapter);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        TraceratopsApplication.from(getActivity()).removeOnEntryListUpdatedListener(this);
     }
 
     @Override
     public void onResume() {
         super.onResume();
         mEntryAdapter.notifyDataSetChanged();
+
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
         TraceratopsApplication.from(getActivity()).addOnEntryListUpdatedListener(this);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        TraceratopsApplication.from(getActivity()).removeOnEntryListUpdatedListener(this);
     }
 
     @Override
@@ -107,5 +102,34 @@ public class LoggerFragment extends BaseFragment implements TraceratopsApplicati
     @Override
     public void onEntriesCleared() {
 
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        menu.clear();
+        inflater.inflate(R.menu.menu_log, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_log_add_filter:
+                addFilter();
+                return true;
+
+            case R.id.menu_log_clear_filter:
+                clearFilters();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void addFilter() {
+        TraceratopsApplication.from(getActivity()).addFilter(new LevelFilter(LogStub.WTF));
+    }
+
+    private void clearFilters() {
+        TraceratopsApplication.from(getActivity()).clearFilters();
     }
 }

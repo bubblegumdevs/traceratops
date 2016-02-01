@@ -39,14 +39,12 @@ public class BaseEntryAdapter extends RecyclerView.Adapter {
 
     private final BaseActivity mBaseActivity;
     private final List<BaseEntry> mEntries;
-    private final List<BaseEntry> mFilteredEntries;
 
     private int selectedIndex = -1;
 
     public BaseEntryAdapter(@NonNull BaseActivity baseActivity, @NonNull List<BaseEntry> entries) {
         mBaseActivity = baseActivity;
         mEntries = entries;
-        mFilteredEntries = mEntries;
     }
 
     public int getSelectedIndex() {
@@ -101,7 +99,7 @@ public class BaseEntryAdapter extends RecyclerView.Adapter {
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if(holder instanceof EntryViewHolder) {
             ((EntryViewHolder) holder).index = position;
-            BaseEntry entry = mFilteredEntries.get(position);
+            BaseEntry entry = mEntries.get(position);
             AbsAdapterPlugin<? extends BaseEntry> plugin = findPluginForClass(entry.getClass());
             plugin.bind(entry, (EntryViewHolder) holder, this);
         }
@@ -109,7 +107,7 @@ public class BaseEntryAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemCount() {
-        return mFilteredEntries.size();
+        return mEntries.size();
     }
 
     private AbsAdapterPlugin<? extends BaseEntry> findPluginForClass(Class<? extends BaseEntry> clazz) {
@@ -119,19 +117,5 @@ public class BaseEntryAdapter extends RecyclerView.Adapter {
             }
         }
         return new GenericAdapterPlugin(mBaseActivity);
-    }
-
-    public List<BaseEntry> getOriginalEntries() {
-        return mEntries;
-    }
-
-    public List<BaseEntry> getFilteredEntries() {
-        return mFilteredEntries;
-    }
-
-    public void clearFilters() {
-        mFilteredEntries.clear();
-        mFilteredEntries.addAll(mEntries);
-        notifyDataSetChanged();
     }
 }
