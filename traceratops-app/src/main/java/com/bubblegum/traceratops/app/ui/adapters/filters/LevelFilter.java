@@ -39,4 +39,8 @@ public class LevelFilter extends BaseEntryFilter<BaseEntry> {
     protected Class<BaseEntry> getSupportedClass() {
         return BaseEntry.class;
     }
+
+    public int getLogLevel() {
+        return Integer.parseInt(constraint.toString());
+    }
 }

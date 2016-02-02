@@ -32,20 +32,27 @@ public class Ping {
     }
 
     public static PingSession startSession(String message) {
-        PingSession session = new PingSession();
-        session.message = message;
-        sInstance.submitStartPingAsync(session);
-        return session;
+        if (sInstance != null) {
+            PingSession session = new PingSession();
+            session.message = message;
+            sInstance.submitStartPingAsync(session);
+            return session;
+        }
+        return null;
     }
 
     public static void endSession(PingSession session) {
-        session.endSession();
-        sInstance.submitPingAsync(session);
+        if (sInstance != null && session != null) {
+            session.endSession();
+            sInstance.submitPingAsync(session);
+        }
     }
 
     public static void tick(PingSession session, int sizeInBytes) {
-        PingSession.Tick tick = session.tick(sizeInBytes);
-        sInstance.submitTickAsync(tick, session);
+        if (sInstance != null && session != null) {
+            PingSession.Tick tick = session.tick(sizeInBytes);
+            sInstance.submitTickAsync(tick, session);
+        }
     }
 
     public static void tick(PingSession session) {

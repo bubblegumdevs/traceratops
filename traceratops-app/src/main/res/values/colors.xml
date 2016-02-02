@@ -4,6 +4,9 @@
     <color name="colorPrimaryDark">#036045</color>
     <color name="colorAccent">#f1c40f</color>
 
+    <!-- Text colors -->
+    <color name="hint_text_color">#ffe1e1e1</color>
+
     <!-- Log level color codes -->
     <color name="logLevelVerbose">#7f8c8d</color>
     <color name="logLevelDebug">#4f5e5c</color>

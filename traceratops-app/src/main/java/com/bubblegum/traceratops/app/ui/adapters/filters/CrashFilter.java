@@ -1,4 +1,5 @@
 /*
+ *
  * Copyright 2015 Bubblegum Developers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,28 +17,21 @@
 
 package com.bubblegum.traceratops.app.ui.adapters.filters;
 
-import com.bubblegum.traceratops.app.model.LogEntry;
-import com.bubblegum.traceratops.app.ui.adapters.BaseEntryAdapter;
+import com.bubblegum.traceratops.app.model.CrashEntry;
 
-import java.util.Locale;
+public class CrashFilter extends BaseEntryFilter<CrashEntry> {
 
-public class LogTagFilter extends BaseEntryFilter<LogEntry>{
-
-    public LogTagFilter(CharSequence constraint) {
-        super(constraint);
+    public CrashFilter() {
+        super("");
     }
 
     @Override
-    protected boolean shouldFilterOut(LogEntry entry, CharSequence constraint) {
-        return !entry.tag.toLowerCase(Locale.ENGLISH).contains(constraint.toString().toLowerCase());
+    protected boolean shouldFilterOut(CrashEntry entry, CharSequence constraint) {
+        return false;
     }
 
     @Override
-    protected Class<LogEntry> getSupportedClass() {
-        return LogEntry.class;
-    }
-
-    public String getTag() {
-        return constraint.toString();
+    protected Class<CrashEntry> getSupportedClass() {
+        return CrashEntry.class;
     }
 }

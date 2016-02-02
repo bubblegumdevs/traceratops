@@ -19,6 +19,7 @@ package com.bubblegum.traceratops.app.ui.fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -46,6 +47,8 @@ public class LoggerFragment extends BaseFragment implements TraceratopsApplicati
 
     RecyclerView mRecyclerView;
     BaseEntryAdapter mEntryAdapter;
+
+    public static final String FILTER_DIALOG_FRAGMENT_TAG = "traceratops:log_filter_fragment_dialog";
 
     @Nullable
     @Override
@@ -115,21 +118,16 @@ public class LoggerFragment extends BaseFragment implements TraceratopsApplicati
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_log_add_filter:
-                addFilter();
+                // Show filter dialog
+                LogFilterFragment filterDialog = new LogFilterFragment();
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+                filterDialog.show(fm, FILTER_DIALOG_FRAGMENT_TAG);
+
                 return true;
 
             case R.id.menu_log_clear_filter:
-                clearFilters();
                 return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private void addFilter() {
-        TraceratopsApplication.from(getActivity()).addFilter(new LevelFilter(LogStub.WTF));
-    }
-
-    private void clearFilters() {
-        TraceratopsApplication.from(getActivity()).clearFilters();
     }
 }

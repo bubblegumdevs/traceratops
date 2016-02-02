@@ -179,4 +179,7 @@ public class TraceratopsApplication extends Application {
         notifyListeners(null, 0);
     }
 
+    public List<BaseEntryFilter> getCurrentFilters() {
+        return filters;
+    }
 }

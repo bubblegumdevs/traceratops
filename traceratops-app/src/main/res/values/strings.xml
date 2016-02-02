@@ -8,6 +8,10 @@
     <string name="view">Open</string>
     <string name="copy">Copy</string>
 
+    <!-- Generic -->
+    <string name="okay">Okay</string>
+    <string name="cancel">Cancel</string>
+    <string name="apply">Apply</string>
 
     <!-- Fragment titles -->
     <string name="debug_fragment_title">Debug</string>
@@ -28,6 +32,17 @@
     <string name="ping_start">PING - Begin</string>
     <string name="ping_end">PING - End</string>
     <string name="ping_tick">Tick recorded</string>
+
+    <!-- Filters -->
+    <string name="filter_title">Add filters</string>
+    <string name="filter_crashes">Show crashes only</string>
+    <string name="filter_tag">TAG</string>
+    <string name="filter_tag_hint">Search logs by tag</string>
+    <string name="filter_tag_hint_disabled">NA for crashes</string>
+    <string name="filter_log_level">Log level</string>
+    <string name="clear_filters">Clear filters</string>
+
+    <!-- Error messages -->
     <string name="error_message_app_outdated">App is outdated. Please update Traceratops.</string>
     <string name="error_message_sdk_outdated">The SDK in your app is outdated. Please update the SDK.</string>
     <string name="error_message_signature_verification_failed">Signature verification failed. Please ensure trust agent is signed with the same key as the app</string>
