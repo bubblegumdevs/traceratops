@@ -24,6 +24,8 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
@@ -41,7 +43,12 @@ public class Traceratops implements ServiceConnection {
     boolean mAppOutdated = false;
     boolean mSDKOutdated = false;
     boolean mShouldLog;
+    boolean mIsSameSignature = false;
+    boolean mTrustAgentInstalled = false;
+
     private static final String TAG = "bubblegum_traceratops";
+
+    private int mTrustMode = TrustMode.TRUST_MODE_CERTIFICATE_CHECK_ONLY;
 
     static final int MIN_APP_VERSION = 1;
 
@@ -57,29 +64,42 @@ public class Traceratops implements ServiceConnection {
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
+        String packageName;
+        if(mWeakContext!=null && mWeakContext.get()!=null) {
+            packageName = mWeakContext.get().getPackageName();
+        } else {
+            return;
+        }
         mLoggerService = ILoggerService.Stub.asInterface(service);
+        try {
+            mLoggerService.reportPackage(packageName);
+        } catch (RemoteException e) {
+        }
         mAppOutdated = false;
         mSDKOutdated = false;
         try {
             int appVersion = mLoggerService.checkVersion(BuildConfig.VERSION_CODE);
-            if(appVersion < 0) {
+            if (appVersion < 0) {
                 mSDKOutdated = true;
-            } else if(appVersion > 0 && appVersion < MIN_APP_VERSION) {
+            } else if (appVersion > 0 && appVersion < MIN_APP_VERSION) {
                 mAppOutdated = true;
             }
-        } catch (RemoteException ignored) {}
-        if(!isCompatible()) {
+        } catch (RemoteException ignored) {
+        }
+        if (!isCompatible()) {
             reportError();
             unbind();
             mLoggerService = null;
             if (mLoggerServiceConnectionCallbacks != null) {
-                mLoggerServiceConnectionCallbacks.onLoggerServiceException(new IllegalArgumentException(mAppOutdated?"Please install the latest version of Traceratops.":"This version of Traceratops needs a newer SDK. Please update the SDK."));
+                mLoggerServiceConnectionCallbacks.onLoggerServiceException(new IllegalArgumentException(mAppOutdated ? "Please install the latest version of Traceratops." : "This version of Traceratops needs a newer SDK. Please update the SDK."));
             }
             return;
         }
-        if(mWeakContext!=null && mWeakContext.get()!=null) {
-            mIsSafe = performSignatureCheck(mWeakContext.get(), name);
-            if(!mIsSafe) {
+        if (mWeakContext != null && mWeakContext.get() != null) {
+            String trustAgentPackage = getTrustedAgentPackageName(mWeakContext.get());
+            String trustPermission = getTrustPermission(mWeakContext.get());
+            mIsSafe = performSignatureCheck(mWeakContext.get(), trustAgentPackage, trustPermission);
+            if (!mIsSafe) {
                 reportError();
                 unbind();
                 mLoggerService = null;
@@ -93,51 +113,91 @@ public class Traceratops implements ServiceConnection {
             TLog.sInstance = new TLog();
             Ping.sInstance = new Ping(mLoggerService);
         }
-        if(mLoggerServiceConnectionCallbacks!=null) {
+        if (mLoggerServiceConnectionCallbacks != null) {
             mLoggerServiceConnectionCallbacks.onLoggerServiceConnected();
         }
+    }
+
+    private String getTrustedAgentPackageName(Context context) {
+        return context.getPackageName().concat(".trust");
+    }
+
+    private String getTrustPermission(Context context) {
+        return context.getPackageName().concat(".TRUST");
     }
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
         mLoggerService = null;
-        if(mLoggerServiceConnectionCallbacks!=null) {
+        if (mLoggerServiceConnectionCallbacks != null) {
             mLoggerServiceConnectionCallbacks.onLoggerServiceDisconnected();
         }
     }
 
-    private boolean performSignatureCheck(Context context, ComponentName serverComponentName) {
+    private boolean performSignatureCheck(Context context, String trustAgentPackageName, String trustPermission) {
+        if (mTrustMode == TrustMode.TRUST_MODE_OVERRIDE) {
+            return true;
+        }
         try {
             PackageManager pm = context.getPackageManager();
+            if (!isPackagePresent(pm, trustAgentPackageName)) {
+                return false;
+            }
+            mTrustAgentInstalled = true;
+            boolean foundMismatch = false;
             Signature[] clientSigs = pm.getPackageInfo(context.getPackageName(), PackageManager.GET_SIGNATURES).signatures;
-            Signature[] serverSigs = pm.getPackageInfo(serverComponentName.getPackageName(), PackageManager.GET_SIGNATURES).signatures;
-            for(int i =0; i < clientSigs.length; i++) {
+            Signature[] serverSigs = pm.getPackageInfo(trustAgentPackageName, PackageManager.GET_SIGNATURES).signatures;
+            for (int i = 0; i < clientSigs.length; i++) {
                 if (!clientSigs[i].toCharsString().equals(serverSigs[i].toCharsString())) {
-                    return false;
+                    foundMismatch = true;
                 }
             }
-            return true;
-        } catch (Throwable t) {
+            mIsSameSignature = !foundMismatch;
+            if (mTrustMode == TrustMode.TRUST_MODE_CERTIFICATE_CHECK_ONLY || !mIsSameSignature) {
+                return mIsSameSignature;
+            }
+            boolean sigCheck = false;
+            try {
+                Cursor cursor = context.getContentResolver().query(Uri.parse("content://" + trustPermission), null, null, null, null);
+                if (cursor != null) {
+                    sigCheck = true;
+                    cursor.close();
+                }
+            } catch (Throwable t) {
+                sigCheck = false;
+            }
+            return sigCheck;
+        } catch (PackageManager.NameNotFoundException e) {
             return false;
         }
+    }
+
+    private boolean isPackagePresent(PackageManager pm, String packageName) {
+        try {
+            pm.getPackageInfo(packageName, 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+        return true;
     }
 
     private void reportError() {
         try {
             int errorCode = 0;
-            if(!mIsSafe) {
-                errorCode = ERROR_CODES.ERROR_CODE_SIGNATURE_VERIFICATION_FAILED;
-            }
-            if(mAppOutdated) {
+            if (!mTrustAgentInstalled) {
+                errorCode = ERROR_CODES.ERROR_CODE_TRUST_AGENT_MISSING;
+            } else if (!mIsSafe) {
+                errorCode = mIsSameSignature ? ERROR_CODES.ERROR_CODE_SIGNATURE_VERIFICATION_FAILED_MIGHT_NEED_ACTIVATION : ERROR_CODES.ERROR_CODE_SIGNATURE_VERIFICATION_FAILED;
+            } else if (mAppOutdated) {
                 errorCode = ERROR_CODES.ERROR_CODE_APP_OUTDATED;
-            }
-            if(mSDKOutdated) {
+            } else if (mSDKOutdated) {
                 errorCode = ERROR_CODES.ERROR_CODE_SDK_OUTDATED;
             }
             if (mLoggerService != null) {
                 mLoggerService.reportError(errorCode);
             }
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
     }
 
     private void setContextWeakly(Context context) {
@@ -145,13 +205,13 @@ public class Traceratops implements ServiceConnection {
     }
 
     public void unbind() {
-        if(mWeakContext!=null && mWeakContext.get()!=null) {
+        if (mWeakContext != null && mWeakContext.get() != null) {
             mWeakContext.get().unbindService(this);
         }
     }
 
     void attemptConnection() {
-        if(sInstance!=null && mWeakContext!=null && mWeakContext.get()!=null) {
+        if (sInstance != null && mWeakContext != null && mWeakContext.get() != null) {
             Intent binderIntent = new Intent("com.bubblegum.traceratops.BIND_LOGGER_SERVICE");
             binderIntent.setClassName("com.bubblegum.traceratops.app", "com.bubblegum.traceratops.app.service.LoggerService");
             mWeakContext.get().bindService(binderIntent, sInstance, Context.BIND_AUTO_CREATE);
@@ -181,6 +241,11 @@ public class Traceratops implements ServiceConnection {
 
         public Builder withLogProxy(@Nullable LogProxy logProxy) {
             mLogInstance.mLogProxy = logProxy;
+            return this;
+        }
+
+        public Builder withTrustMode(int trustMode) {
+            mInstance.mTrustMode = trustMode;
             return this;
         }
 
@@ -226,7 +291,9 @@ public class Traceratops implements ServiceConnection {
     public interface LoggerServiceConnectionCallbacks {
 
         void onLoggerServiceConnected();
+
         void onLoggerServiceDisconnected();
+
         void onLoggerServiceException(Throwable t);
 
     }
@@ -239,5 +306,13 @@ public class Traceratops implements ServiceConnection {
         public static final int ERROR_CODE_APP_OUTDATED = 1;
         public static final int ERROR_CODE_SDK_OUTDATED = 2;
         public static final int ERROR_CODE_SIGNATURE_VERIFICATION_FAILED = 3;
+        public static final int ERROR_CODE_SIGNATURE_VERIFICATION_FAILED_MIGHT_NEED_ACTIVATION = 4;
+        public static final int ERROR_CODE_TRUST_AGENT_MISSING = 5;
+    }
+
+    public static final class TrustMode {
+        public static final int TRUST_MODE_OVERRIDE = 0;
+        public static final int TRUST_MODE_CERTIFICATE_CHECK_ONLY = 1;
+        public static final int TRUST_MODE_SIGNATURE_CHECK = 2;
     }
 }

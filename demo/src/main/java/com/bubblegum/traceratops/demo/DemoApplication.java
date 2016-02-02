@@ -46,6 +46,7 @@ public class DemoApplication extends Application {
                 })
                 .withLogProxy(LogProxies.EMPTY_LOG_PROXY)
                 .shouldLog(true)
+                .withTrustMode(Traceratops.TrustMode.TRUST_MODE_SIGNATURE_CHECK)
                 .handleCrashes(this)
                 .connect();
     }

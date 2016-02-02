@@ -1,0 +1,51 @@
+<!--
+  ~ Copyright 2015 Bubblegum Developers
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  --><!-- TODO Replace all instances of "com.bubblegum.traceratops.demo" in this file with your package name -->
+
+<!-- TODO Replace package name with <your package name>.trust -->
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.bubblegum.traceratops.demo.trust">
+
+
+    <!-- TODO Replace permission name with <your package name>.TRUST -->
+
+    <permission
+        android:name="com.bubblegum.traceratops.demo.TRUST"
+        android:protectionLevel="signature" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <activity
+            android:name="com.bubblegum.traceratops.trust.ui.ConfirmationActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
+
+        <!-- TODO Replace authority string with <your package name>.TRUST -->
+
+        <provider
+            android:name="com.bubblegum.traceratops.trust.provider.TrustAgentProvider"
+            android:authorities="com.bubblegum.traceratops.demo.TRUST"
+            android:exported="true"
+            android:readPermission="com.bubblegum.traceratops.demo.TRUST" />
+
+    </application>
+
+</manifest>

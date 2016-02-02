@@ -22,6 +22,8 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -125,6 +127,11 @@ public class LoggerService extends Service {
             errorIntent.putExtra(EXTRA_ERROR_CODE, errorCode);
             sendBroadcast(errorIntent);
             TraceratopsApplication.from(LoggerService.this).setErrorCode(errorCode);
+        }
+
+        @Override
+        public void reportPackage(String packageName) throws RemoteException {
+            TraceratopsApplication.from(LoggerService.this).targetPackageName = packageName;
         }
     };
 
@@ -312,5 +319,7 @@ public class LoggerService extends Service {
         public static final int ERROR_CODE_APP_OUTDATED = 1;
         public static final int ERROR_CODE_SDK_OUTDATED = 2;
         public static final int ERROR_CODE_SIGNATURE_VERIFICATION_FAILED = 3;
+        public static final int ERROR_CODE_SIGNATURE_VERIFICATION_FAILED_MIGHT_NEED_ACTIVATION = 4;
+        public static final int ERROR_CODE_TRUST_AGENT_MISSING = 5;
     }
 }

@@ -34,6 +34,8 @@ public class TraceratopsApplication extends Application {
     List<BaseEntry> mFilteredEntryList = new ArrayList<>();
     List<OnEntryListUpdatedListener> mOnEntryListUpdatedListeners = new ArrayList<>();
 
+    public String targetPackageName;
+
     List<BaseEntryFilter> filters = new ArrayList<>();
 
     private int errorCode = -1;

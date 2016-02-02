@@ -28,4 +28,5 @@ interface ILoggerService {
     void pingTick(long timetamp, int sizeInBytes, String message, int token);
     int checkVersion(int sdkVersion);
     void reportError(int errorCode);
+    void reportPackage(String packageName);
 }

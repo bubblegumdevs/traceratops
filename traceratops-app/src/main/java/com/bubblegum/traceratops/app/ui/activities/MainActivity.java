@@ -17,6 +17,8 @@
 package com.bubblegum.traceratops.app.ui.activities;
 
 import android.app.NotificationManager;
+import android.content.ComponentName;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -29,6 +31,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
+import android.widget.Toast;
 import android.widget.Toolbar;
 
 import com.bubblegum.traceratops.app.R;
@@ -61,12 +64,13 @@ public class MainActivity extends BaseActivity implements Snackable {
         tabLayout.setupWithViewPager(viewPager);
 
         getSupportActionBar().setTitle(getString(R.string.dash_board));
-        final String errorMessage = getErrorMessageIfAny(TraceratopsApplication.from(this).getErrorCode());
+        final int errorCode = TraceratopsApplication.from(this).getErrorCode();
+        final String errorMessage = getErrorMessageIfAny(errorCode);
         if(errorMessage!=null) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showSnackbar(errorMessage, Snackbar.LENGTH_INDEFINITE, null, null);
+                    showSnackbar(errorMessage, Snackbar.LENGTH_INDEFINITE, getErrorMessageActionLabel(errorCode), getErrorMessageAction(errorCode));
                 }
             }, 300);
         }
@@ -92,9 +96,45 @@ public class MainActivity extends BaseActivity implements Snackable {
                 return getString(R.string.error_message_sdk_outdated);
             case LoggerService.ERROR_CODES.ERROR_CODE_SIGNATURE_VERIFICATION_FAILED:
                 return getString(R.string.error_message_signature_verification_failed);
+            case LoggerService.ERROR_CODES.ERROR_CODE_SIGNATURE_VERIFICATION_FAILED_MIGHT_NEED_ACTIVATION:
+                return "Trust agent is not activated yet.";
+            case LoggerService.ERROR_CODES.ERROR_CODE_TRUST_AGENT_MISSING:
+                return "Trust agent missing or not configured correctly.";
             default:
                 return getString(R.string.error_message_unknown, errorCode);
         }
+    }
+
+    private @Nullable String getErrorMessageActionLabel(int errorCode) {
+        switch (errorCode) {
+            case LoggerService.ERROR_CODES.ERROR_CODE_SIGNATURE_VERIFICATION_FAILED_MIGHT_NEED_ACTIVATION:
+                return "Activate";
+            default:
+                return null;
+        }
+    }
+
+    private @Nullable View.OnClickListener getErrorMessageAction(int errorCode) {
+        switch (errorCode) {
+            case LoggerService.ERROR_CODES.ERROR_CODE_SIGNATURE_VERIFICATION_FAILED_MIGHT_NEED_ACTIVATION:
+                return new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        confirmTrustAgent(TraceratopsApplication.from(MainActivity.this).targetPackageName);
+                    }
+                };
+            default:
+                return null;
+        }
+    }
+
+    private void confirmTrustAgent(String packageName) {
+        String trustPackageName = packageName.concat(".trust");
+        String confirmActivityName = "com.bubblegum.traceratops.trust.ui.ConfirmationActivity";
+        ComponentName trustComponent = new ComponentName(trustPackageName, confirmActivityName);
+        Intent confirmIntent = new Intent();
+        confirmIntent.setComponent(trustComponent);
+        startActivity(confirmIntent);
     }
 
     @Override

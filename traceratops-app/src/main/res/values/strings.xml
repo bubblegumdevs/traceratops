@@ -30,7 +30,7 @@
     <string name="ping_tick">Tick recorded</string>
     <string name="error_message_app_outdated">App is outdated. Please update Traceratops.</string>
     <string name="error_message_sdk_outdated">The SDK in your app is outdated. Please update the SDK.</string>
-    <string name="error_message_signature_verification_failed">Signature verification failed. Please ensure Traceratops is signed with the same key as the app</string>
+    <string name="error_message_signature_verification_failed">Signature verification failed. Please ensure trust agent is signed with the same key as the app</string>
     <string name="error_message_unknown">Unknown error code (%d)</string>
 
 </resources>
