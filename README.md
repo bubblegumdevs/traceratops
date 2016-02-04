@@ -12,46 +12,25 @@ For more information please check [the wiki][1]
 Integration guide
 -----------------
 
-1. Download Traceratops app from the [Play Store][ps]. You can scan the QR code below.
+1. Download Traceratops app from the [Play Store](https://play.google.com/store/apps/details?id=com.bubblegum.traceratops.app). You can scan the QR code below.
    
    ![](https://cloud.githubusercontent.com/assets/1681767/12774900/4d20ccb8-ca6f-11e5-86aa-14ec68cb9096.png)
-2. Clone this repo.
-   (NOTE: If you are looking to just try out this SDK, you can skip step 2, 3 and 4. However, please follow these steps when you plan to go on production. More details in [the wiki][1])
-3. In the trustagent module's AndroidManifest.xml, replace ```com.bubblegum.traceratops.demo.trust``` with ```<your package name>.trust``` and ```com.bubblegum.traceratops.demo.TRUST``` with ```<your package name>.TRUST```. Do the same in trustagent's build.gradle file.
-4. Now build trustagent. Use the release key to sign trustagent (the same release key with which you sign your app in production). After building is complete, install the output APK in all the devices where you would like to use Traceratops.
-5. Now include the SDK in your app. To do that, include the following dependency in your app's build.gradle
+1. Set up the trust agent by following [these steps](trust-agent-setup).  
+_**NOTE**: You can skip this step if you just want to try out the SDK. However, if you are planning to launch your app to production, it is strongly recommended that you complete this step._
+1. Now include the SDK in your app. To do that, include the following dependency in your app's build.gradle:
 
    ```groovy
    compile 'com.bubblegum.traceratops:traceratops-core:0.2.0'
    ```
-6. Add the following code in your app's Application class' ```onCreate()``` method to set up the SDK:
+1. Add the following code in your app's Application class' ```onCreate()``` method to set up the SDK:
 
     ```java
     Traceratops.setup(this)
-            .withServiceConnectionCallbacks(new Traceratops.LoggerServiceConnectionCallbacks() {
-                @Override
-                public void onLoggerServiceConnected() {
-    
-                }
-    
-                @Override
-                public void onLoggerServiceDisconnected() {
-    
-                }
-    
-                @Override
-                public void onLoggerServiceException(Throwable t) {
-    
-                }
-            })
-            .withLogProxy(LogProxies.EMPTY_LOG_PROXY)
-            .shouldLog(true)
-            .handleCrashes(this)
+            .handleCrashes(true)
             .connect();
-          }
     ```
-   If you have skipped step 2, 3 and 4, add ```.withTrustMode(TrustMode.TRUST_MODE_OVERRIDE)``` to the Builder methods.
-7. Use ```com.bubblegum.traceratops.sdk.client.Log``` class to record logs. Optionally, you can replace all instances of ```android.util.Log``` import statements with this one.
+   If you have skipped the trust agent setup, add ```.withTrustMode(TrustMode.TRUST_MODE_OVERRIDE)``` to the above code. To find out more about trust agents and TrustModes, click [here](why-trust-agent).
+1. Use ```com.bubblegum.traceratops.sdk.client.Log``` class to record logs. Optionally, you can replace all instances of ```android.util.Log``` import statements with this one.
 
 If done correctly, you should see Log entries in the Traceratops app dashboard.
 
