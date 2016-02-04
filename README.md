@@ -17,8 +17,8 @@ Integration guide
    ![](https://cloud.githubusercontent.com/assets/1681767/12774900/4d20ccb8-ca6f-11e5-86aa-14ec68cb9096.png)
 2. Clone this repo.
    (NOTE: If you are looking to just try out this SDK, you can skip step 2, 3 and 4. However, please follow these steps when you plan to go on production. More details in [the wiki][1])
-3. Now build trustagent. In the trustagent module's AndroidManifest.xml, replace ```com.bubblegum.traceratops.demo.trust``` with ```<your package name>.trust``` and ```com.bubblegum.traceratops.demo.TRUST``` with ```<your package name>.TRUST```. Do the same in trustagent's build.gradle file.
-4. Install the output APK in the devices where you would like to use Traceratops
+3. In the trustagent module's AndroidManifest.xml, replace ```com.bubblegum.traceratops.demo.trust``` with ```<your package name>.trust``` and ```com.bubblegum.traceratops.demo.TRUST``` with ```<your package name>.TRUST```. Do the same in trustagent's build.gradle file.
+4. Now build trustagent. Use the release key to sign trustagent (the same release key with which you sign your app in production). After building is complete, install the output APK in all the devices where you would like to use Traceratops.
 5. Now include the SDK in your app. To do that, include the following dependency in your app's build.gradle
 
    ```groovy
