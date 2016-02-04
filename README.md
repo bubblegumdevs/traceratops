@@ -15,7 +15,7 @@ Integration guide
 1. Download Traceratops app from the [Play Store](https://play.google.com/store/apps/details?id=com.bubblegum.traceratops.app). You can scan the QR code below.
    
    ![](https://cloud.githubusercontent.com/assets/1681767/12774900/4d20ccb8-ca6f-11e5-86aa-14ec68cb9096.png)
-1. Set up the trust agent by following [these steps](trust-agent-setup).  
+1. Set up the trust agent by following [these steps][2].  
 _**NOTE**: You can skip this step if you just want to try out the SDK. However, if you are planning to launch your app to production, it is strongly recommended that you complete this step._
 1. Now include the SDK in your app. To do that, include the following dependency in your app's build.gradle:
 
@@ -29,7 +29,7 @@ _**NOTE**: You can skip this step if you just want to try out the SDK. However, 
             .handleCrashes(true)
             .connect();
     ```
-   If you have skipped the trust agent setup, add ```.withTrustMode(TrustMode.TRUST_MODE_OVERRIDE)``` to the above code. To find out more about trust agents and TrustModes, click [here](why-trust-agent).
+   If you have skipped the trust agent setup, add ```.withTrustMode(TrustMode.TRUST_MODE_OVERRIDE)``` to the above code. To find out more about trust agents and TrustModes, click [here][3].
 1. Use ```com.bubblegum.traceratops.sdk.client.Log``` class to record logs. Optionally, you can replace all instances of ```android.util.Log``` import statements with this one.
 
 If done correctly, you should see Log entries in the Traceratops app dashboard.
@@ -53,4 +53,6 @@ License
 
 
  [1]: https://github.com/bubblegumdevs/traceratops/wiki
+ [2]: https://github.com/bubblegumdevs/traceratops/wiki/trust-agent-setup
+ [3]: https://github.com/bubblegumdevs/traceratops/wiki/why-trust-agent
  [ps]: https://play.google.com/store/apps/details?id=com.bubblegum.traceratops.app
