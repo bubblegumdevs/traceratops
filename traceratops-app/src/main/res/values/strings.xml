@@ -12,6 +12,8 @@
     <string name="okay">Okay</string>
     <string name="cancel">Cancel</string>
     <string name="apply">Apply</string>
+    <string name="share">Share</string>
+    <string name="send_to">Send to</string>
 
     <!-- Fragment titles -->
     <string name="debug_fragment_title">Debug</string>
@@ -47,5 +49,9 @@
     <string name="error_message_sdk_outdated">The SDK in your app is outdated. Please update the SDK.</string>
     <string name="error_message_signature_verification_failed">Signature verification failed. Please ensure trust agent is signed with the same key as the app</string>
     <string name="error_message_unknown">Unknown error code (%d)</string>
+
+
+    <!-- Toast messages -->
+    <string name="toast_message_stacktrace_copied">Stack trace copied to clipboard</string>
 
 </resources>

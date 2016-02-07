@@ -17,12 +17,20 @@
 
 package com.bubblegum.traceratops.app.ui.fragments;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bubblegum.traceratops.app.R;
 
@@ -30,6 +38,8 @@ public class CrashDetailsFragment extends BaseFragment {
 
     public static final String EXTRA_CRASH_MSG = ":crash:message";
     public static final String EXTRA_CRASH_STACKTRACE = ":crash:stacktrace";
+
+    private String mStacktrace;
 
     @Nullable
     @Override
@@ -40,22 +50,56 @@ public class CrashDetailsFragment extends BaseFragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        setHasOptionsMenu(true);
 
         TextView messageView = (TextView) view.findViewById(R.id.crash_message_tv);
-        TextView stacktraceView = (TextView) view.findViewById(R.id.crash_stacktrace_tv);
+        final TextView stacktraceView = (TextView) view.findViewById(R.id.crash_stacktrace_tv);
 
         String message = null;
-        String stacktrace = null;
         if (getArguments() != null) {
             message = getArguments().getString(EXTRA_CRASH_MSG);
-            stacktrace = getArguments().getString(EXTRA_CRASH_STACKTRACE);
+            mStacktrace = getArguments().getString(EXTRA_CRASH_STACKTRACE);
         }
 
         if (message != null) {
             messageView.setText(message);
         }
-        if (stacktrace != null) {
-            stacktraceView.setText(stacktrace);
+        if (mStacktrace != null) {
+            stacktraceView.setText(mStacktrace);
+
+            // Copy stacktrace on clicking
+            stacktraceView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    ClipboardManager cbMan = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData clipData = ClipData.newPlainText("stacktrace", stacktraceView.getText());
+                    cbMan.setPrimaryClip(clipData);
+                    Toast.makeText(getActivity(), R.string.toast_message_stacktrace_copied, Toast.LENGTH_SHORT).show();
+                }
+            });
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.menu_crash_detail, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+        switch (itemId) {
+            case R.id.menu_share:
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_TEXT, mStacktrace);
+                shareIntent.setType("text/plain");
+                startActivity(Intent.createChooser(shareIntent, getString(R.string.send_to)));
+                break;
+            default:
+                break;
+        }
+        return false;
     }
 }
