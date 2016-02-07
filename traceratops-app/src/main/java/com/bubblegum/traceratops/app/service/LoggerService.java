@@ -68,13 +68,13 @@ public class LoggerService extends Service {
 
     ExecutorService mExecutorService = Executors.newFixedThreadPool(1);
 
-    private BroadcastReceiver mStopReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            android.util.Log.d("TRACERT", "Received");
-            stopSelf();
-        }
-    };
+//    private BroadcastReceiver mStopReceiver = new BroadcastReceiver() {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            android.util.Log.d("TRACERT", "Received");
+//            stopSelf();
+//        }
+//    };
 
     @Nullable
     @Override
@@ -86,17 +86,17 @@ public class LoggerService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        registerReceiver(mStopReceiver, new IntentFilter(ACTION_STOP));
+//        registerReceiver(mStopReceiver, new IntentFilter(ACTION_STOP));
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        try {
-            unregisterReceiver(mStopReceiver);
-        } catch (IllegalArgumentException iae) {
-            // not registered
-        }
+//        try {
+//            unregisterReceiver(mStopReceiver);
+//        } catch (IllegalArgumentException iae) {
+//             not registered
+//        }
     }
 
     @Override
@@ -370,10 +370,10 @@ public class LoggerService extends Service {
     private void showPersistentNotification() {
         NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, R.id.traceratops_notification_pending_intent, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
-        PendingIntent stopPendingIntent = PendingIntent.getBroadcast(this, R.id.traceratops_notification_stop_pending_intent, new Intent(ACTION_STOP), PendingIntent.FLAG_UPDATE_CURRENT);
+//        PendingIntent stopPendingIntent = PendingIntent.getBroadcast(this, R.id.traceratops_notification_stop_pending_intent, new Intent(ACTION_STOP), PendingIntent.FLAG_UPDATE_CURRENT);
         Notification notification = new NotificationCompat.Builder(this)
                 .setOngoing(true)
-                .addAction(new NotificationCompat.Action(R.drawable.ic_notif_stop, getString(R.string.stop), stopPendingIntent))
+//                .addAction(new NotificationCompat.Action(R.drawable.ic_notif_stop, getString(R.string.stop), stopPendingIntent))
                 .setColor(ContextCompat.getColor(this, R.color.colorPrimary))
                 .setCategory(NotificationCompat.CATEGORY_STATUS)
                 .setPriority(NotificationCompat.PRIORITY_MIN)
