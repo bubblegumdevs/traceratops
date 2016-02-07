@@ -19,6 +19,7 @@ package com.bubblegum.traceratops.app;
 import android.app.Activity;
 import android.app.Application;
 import android.app.Service;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
@@ -35,6 +36,8 @@ import java.util.Map;
 public class TraceratopsApplication extends Application {
 
     Map<String, AppProfile> mConnectedAppProfiles = new HashMap<>();
+
+    private Handler mMainThreadHandler;
 
     private List<ProfileUpdateNotifier> mProfileUpdateNotifierList = new ArrayList<>();
 
@@ -59,6 +62,7 @@ public class TraceratopsApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        mMainThreadHandler = new Handler(getMainLooper());
     }
 
     public static TraceratopsApplication from(Application application) {
@@ -83,9 +87,11 @@ public class TraceratopsApplication extends Application {
     }
 
     public AppProfile makeAppProfile(IBinder mBinder, String packageName) {
+        android.util.Log.d("TRACERT", "Make App Profile called for " + packageName);
         AppProfile profile = mConnectedAppProfiles.get(packageName);
         if(profile==null) {
             profile = new StandardAppProfile(mBinder);
+            profile.targetPackageName = packageName;
             addProfile(profile);
             if(currentAppProfile==null) {
                 setProfile(profile);
@@ -94,8 +100,13 @@ public class TraceratopsApplication extends Application {
         return profile;
     }
 
+    public AppProfile getProfile(String packageName) {
+        return mConnectedAppProfiles.get(packageName);
+    }
+
     public void setProfile(AppProfile profile) {
         currentAppProfile = profile;
+        android.util.Log.d("TRACERT", "Setting profile to " + profile.targetPackageName);
         updateNotifiers(profile, false);
     }
 
@@ -104,13 +115,29 @@ public class TraceratopsApplication extends Application {
         updateNotifiers(profile, true);
     }
 
-    private void updateNotifiers(AppProfile profile, boolean addedNewProfile) {
-        for(ProfileUpdateNotifier notifier : mProfileUpdateNotifierList) {
+    private void updateNotifiers(final AppProfile profile, boolean addedNewProfile) {
+        for(final ProfileUpdateNotifier notifier : mProfileUpdateNotifierList) {
             if(addedNewProfile) {
-                notifier.onNewProfileAdded(profile);
+                runOnMainThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        notifier.onNewProfileAdded(profile);
+                    }
+                });
             } else {
-                notifier.setProfile(profile);
+                runOnMainThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        notifier.setProfile(profile);
+                    }
+                });
             }
+        }
+    }
+
+    private void runOnMainThread(Runnable runnable) {
+        if(mMainThreadHandler!=null) {
+            mMainThreadHandler.post(runnable);
         }
     }
 }

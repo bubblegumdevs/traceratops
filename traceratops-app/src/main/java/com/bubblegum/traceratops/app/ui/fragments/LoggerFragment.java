@@ -87,7 +87,9 @@ public class LoggerFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
-//        mEntryAdapter.notifyDataSetChanged();
+        if(mEntryAdapter!=null) {
+            mEntryAdapter.notifyDataSetChanged();
+        }
     }
 
     @Override

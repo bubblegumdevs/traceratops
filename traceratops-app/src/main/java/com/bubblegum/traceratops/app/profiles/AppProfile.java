@@ -128,6 +128,7 @@ public abstract class AppProfile {
     }
 
     public void setErrorCode(int errorCode) {
+        android.util.Log.d("TRACERT", "Error code set to " + errorCode + " for " + targetPackageName);
         this.errorCode = errorCode;
     }
 

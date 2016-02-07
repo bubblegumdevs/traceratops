@@ -18,6 +18,7 @@
 <resources>
     <!-- Standard text sizes -->
     <dimen name="primary_text_size">18sp</dimen>
+    <dimen name="title_text_size">18sp</dimen>
     <dimen name="secondary_text_size">14sp</dimen>
     <dimen name="tertiary_text_size">14sp</dimen>
 

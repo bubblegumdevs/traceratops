@@ -19,6 +19,8 @@ package com.bubblegum.traceratops.app.ui.activities;
 import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -30,7 +32,10 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.AppCompatSpinner;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Toast;
 
 import com.bubblegum.traceratops.app.R;
 import com.bubblegum.traceratops.app.TraceratopsApplication;
@@ -39,6 +44,7 @@ import com.bubblegum.traceratops.app.profiles.AppProfile;
 import com.bubblegum.traceratops.app.profiles.ProfileUpdateNotifier;
 import com.bubblegum.traceratops.app.service.LoggerService;
 import com.bubblegum.traceratops.app.ui.Snackable;
+import com.bubblegum.traceratops.app.ui.adapters.AppChooseSpinnerAdapter;
 import com.bubblegum.traceratops.app.ui.fragments.DebugFragment;
 import com.bubblegum.traceratops.app.ui.fragments.LoggerFragment;
 import com.bubblegum.traceratops.app.ui.fragments.PingsFragment;
@@ -49,15 +55,16 @@ import java.util.List;
 public class MainActivity extends BaseActivity implements Snackable {
 
     CoordinatorLayout mCoordinatorLayout;
+    android.support.v7.widget.Toolbar toolbar;
+    AppCompatSpinner spinner;
+    Snackbar snackbar;
 
     AppProfile mCurrentAppProfile = null;
-
-    android.support.v7.widget.Toolbar toolbar;
 
     ProfileUpdateNotifier mNotifier = new ProfileUpdateNotifier(null) {
         @Override
         protected void onProfileChanged(AppProfile newProfile, AppProfile oldProfile) {
-
+            updateUI();
         }
 
         @Override
@@ -77,12 +84,58 @@ public class MainActivity extends BaseActivity implements Snackable {
 
         @Override
         public void onNewProfileAdded(AppProfile profile) {
-            initDrawer();
+            if(spinner!=null) {
+                updateSpinner();
+            }
         }
     };
 
-    private void initDrawer() {
+    private void updateSpinner() {
+        int selectedIndex = -1, i = 0;
+        final List<ApplicationInfo> profiles = new ArrayList<>();
+        AppProfile currentProfile = TraceratopsApplication.from(this).getCurrentAppProfile();
+        for(AppProfile profile : TraceratopsApplication.from(this).getProfiles()) {
+            try {
+                ApplicationInfo info = getPackageManager().getApplicationInfo(profile.targetPackageName, 0);
+                profiles.add(info);
+                if(currentProfile!=null && currentProfile.targetPackageName.contentEquals(info.packageName)) {
+                    selectedIndex = i;
+                }
+                i++;
+            } catch (PackageManager.NameNotFoundException e) {
 
+            }
+        }
+        if(profiles.size() > 0) {
+            AppChooseSpinnerAdapter spinnerAdapter = new AppChooseSpinnerAdapter(this, android.R.layout.simple_list_item_1, profiles);
+            spinner.setAdapter(spinnerAdapter);
+            final int lastSelectedIndex = selectedIndex;
+            if(selectedIndex!=-1) {
+                spinner.setSelection(lastSelectedIndex);
+            }
+            spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    if(lastSelectedIndex==position) {
+                        return;
+                    }
+                    String packageName = profiles.get(position).packageName;
+                    AppProfile profile = TraceratopsApplication.from(MainActivity.this).getProfile(packageName);
+                    if (profile != null) {
+                        TraceratopsApplication.from(MainActivity.this).setProfile(profile);
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
+            getSupportActionBar().setTitle("");
+        } else {
+            spinner.setVisibility(View.GONE);
+            getSupportActionBar().setTitle(getString(R.string.dash_board));
+        }
     }
 
     @Override
@@ -93,15 +146,21 @@ public class MainActivity extends BaseActivity implements Snackable {
         mCoordinatorLayout = (CoordinatorLayout) findViewById(R.id.parent);
 
         toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.toolbar);
+        spinner = (AppCompatSpinner) findViewById(R.id.navSpinner);
         setSupportActionBar(toolbar);
-
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
 
         setupViewPager(viewPager);
         tabLayout.setupWithViewPager(viewPager);
 
-        getSupportActionBar().setTitle(getString(R.string.dash_board));
+    }
+
+    private void updateUI() {
+        updateSpinner();
+        if(snackbar!=null) {
+            snackbar.dismiss();
+        }
         mCurrentAppProfile = TraceratopsApplication.from(this).getCurrentAppProfile();
         if(mCurrentAppProfile!=null) {
             final int errorCode = mCurrentAppProfile.getErrorCode();
@@ -110,12 +169,11 @@ public class MainActivity extends BaseActivity implements Snackable {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        showSnackbar(errorMessage, Snackbar.LENGTH_INDEFINITE, getErrorMessageActionLabel(errorCode), getErrorMessageAction(errorCode));
+                        snackbar = showSnackbar(errorMessage, Snackbar.LENGTH_INDEFINITE, getErrorMessageActionLabel(errorCode), getErrorMessageAction(errorCode));
                     }
                 }, 300);
             }
         }
-        initDrawer();
     }
 
     @Override
@@ -185,6 +243,14 @@ public class MainActivity extends BaseActivity implements Snackable {
     protected void onResume() {
         super.onResume();
         clearAllPendingNotifications();
+        updateUI();
+        TraceratopsApplication.from(this).addProfileUpdateNotifier(mNotifier);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        TraceratopsApplication.from(this).removeProfileUpdateNotifier(mNotifier);
     }
 
     private void clearAllPendingNotifications() {

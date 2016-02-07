@@ -31,6 +31,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.SparseArray;
 
 import com.bubblegum.traceratops.ILoggerService;
 import com.bubblegum.traceratops.app.BuildConfig;
@@ -45,6 +46,9 @@ import com.bubblegum.traceratops.app.ui.activities.CrashDetailsActivity;
 import com.bubblegum.traceratops.app.ui.activities.MainActivity;
 import com.bubblegum.traceratops.app.ui.fragments.CrashDetailsFragment;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -55,6 +59,8 @@ public class LoggerService extends Service {
     public static final String EXTRA_ERROR_CODE = ":traceratops:loggerService:errorCode";
 
     private static final int MIN_SDK_VERSION = 1;
+
+    private SparseArray<String> mPidMap = new SparseArray<>();
 
     ExecutorService mExecutorService = Executors.newFixedThreadPool(1);
 
@@ -73,16 +79,14 @@ public class LoggerService extends Service {
 
     private class TraceratopsBinder extends ILoggerService.Stub {
 
-        AppProfile appProfile;
-
         @Override
         public void log(String tag, String message, String stackTrace, int level) throws RemoteException {
-            queueLogTask(tag, message, stackTrace, level);
+            queueLogTask(tag, message, stackTrace, level, Binder.getCallingPid());
         }
 
         @Override
         public void tlog(String tag, String message, Bundle args, int level) throws RemoteException {
-            queueTLogTask(tag, message, args, level);
+            queueTLogTask(tag, message, args, level, Binder.getCallingPid());
         }
 
         @Override
@@ -97,22 +101,22 @@ public class LoggerService extends Service {
 
         @Override
         public void crash(String stacktrace, String message) throws RemoteException {
-            queueCrashTask(stacktrace, message);
+            queueCrashTask(stacktrace, message, Binder.getCallingPid());
         }
 
         @Override
         public void pingStart(long startTime, String message, int token) throws RemoteException {
-            queuePingStartTask(startTime, message, token);
+            queuePingStartTask(startTime, message, token, Binder.getCallingPid());
         }
 
         @Override
         public void pingEnd(long startTime, long endTime, String message, int token) throws RemoteException {
-            queuePingEndTask(startTime, endTime, message, token);
+            queuePingEndTask(startTime, endTime, message, token, Binder.getCallingPid());
         }
 
         @Override
         public void pingTick(long timetamp, int sizeInBytes, String message, int token) throws RemoteException {
-            queuePingTickTask(timetamp, sizeInBytes, message, token);
+            queuePingTickTask(timetamp, sizeInBytes, message, token, Binder.getCallingPid());
         }
 
         @Override
@@ -128,6 +132,7 @@ public class LoggerService extends Service {
             Intent errorIntent = new Intent(ACTION_ERROR);
             errorIntent.putExtra(EXTRA_ERROR_CODE, errorCode);
             sendBroadcast(errorIntent);
+            AppProfile appProfile = getAppProfileForPid(Binder.getCallingPid());
             if(appProfile!=null) {
                 appProfile.setErrorCode(errorCode);
             }
@@ -135,34 +140,32 @@ public class LoggerService extends Service {
 
         @Override
         public void reportPackage(String packageName) throws RemoteException {
-            appProfile = TraceratopsApplication.from(LoggerService.this).makeAppProfile(this, packageName);
-            if(appProfile!=null) {
-                appProfile.targetPackageName = packageName;
-            }
+            mPidMap.put(Binder.getCallingPid(), packageName);
+            TraceratopsApplication.from(LoggerService.this).makeAppProfile(this, packageName);
         }
 
-        private void queuePingStartTask(long timeStart, String message, int token) {
-            mExecutorService.submit(new PingTask(timeStart, message, token, System.currentTimeMillis()));
+        private void queuePingStartTask(long timeStart, String message, int token, int pid) {
+            mExecutorService.submit(new PingTask(timeStart, message, token, System.currentTimeMillis(), pid));
         }
 
-        private void queuePingEndTask(long timeStart, long timeEnd, String message, int token) {
-            mExecutorService.submit(new PingTask(timeStart, timeEnd, message, token, System.currentTimeMillis()));
+        private void queuePingEndTask(long timeStart, long timeEnd, String message, int token, int pid) {
+            mExecutorService.submit(new PingTask(timeStart, timeEnd, message, token, System.currentTimeMillis(), pid));
         }
 
-        private void queuePingTickTask(long tickTimestamp, int sizeInBytes, String message, int token) {
-            mExecutorService.submit(new PingTask(tickTimestamp, sizeInBytes, message, token));
+        private void queuePingTickTask(long tickTimestamp, int sizeInBytes, String message, int token, int pid) {
+            mExecutorService.submit(new PingTask(tickTimestamp, sizeInBytes, message, token, pid));
         }
 
-        private void queueTLogTask(String tag, String message, Bundle bundle, int level) {
-            mExecutorService.submit(new TLogTask(tag, message, bundle, level, System.currentTimeMillis()));
+        private void queueTLogTask(String tag, String message, Bundle bundle, int level, int pid) {
+            mExecutorService.submit(new TLogTask(tag, message, bundle, level, System.currentTimeMillis(), pid));
         }
 
-        private void queueLogTask(String tag, String message, String stackTrace, int level) {
-            mExecutorService.submit(new LogTask(tag, message, stackTrace, level, System.currentTimeMillis()));
+        private void queueLogTask(String tag, String message, String stackTrace, int level, int pid) {
+            mExecutorService.submit(new LogTask(tag, message, stackTrace, level, System.currentTimeMillis(), pid));
         }
 
-        private void queueCrashTask(String stacktrace, String message) {
-            mExecutorService.submit(new CrashTask(message, stacktrace, System.currentTimeMillis()));
+        private void queueCrashTask(String stacktrace, String message, int pid) {
+            mExecutorService.submit(new CrashTask(message, stacktrace, System.currentTimeMillis(), pid));
 
         /* Crash notification:
          * Clicking on this notification should take the user directly to that particular crash page
@@ -189,18 +192,21 @@ public class LoggerService extends Service {
         private class LogTask implements Runnable {
 
             final LogEntry logEntry;
+            int pid;
 
-            public LogTask(String tag, String message, String stackTrace, int level, long timestamp) {
+            public LogTask(String tag, String message, String stackTrace, int level, long timestamp, int pid) {
                 logEntry = new LogEntry();
                 logEntry.tag = tag;
                 logEntry.description = message;
                 logEntry.level = level;
                 logEntry.stackTrace = stackTrace;
                 logEntry.timestamp = timestamp;
+                this.pid = pid;
             }
 
             @Override
             public void run() {
+                AppProfile appProfile = getAppProfileForPid(pid);
                 if(appProfile!=null) {
                     appProfile.addEntry(logEntry);
                 }
@@ -211,16 +217,19 @@ public class LoggerService extends Service {
         private class CrashTask implements Runnable {
 
             final CrashEntry crashEntry;
+            int pid;
 
-            public CrashTask(String message, String stacktrace, long timestamp) {
+            public CrashTask(String message, String stacktrace, long timestamp, int pid) {
                 crashEntry = new CrashEntry();
                 crashEntry.message = message;
                 crashEntry.stacktrace = stacktrace;
                 crashEntry.timestamp = timestamp;
+                this.pid = pid;
             }
 
             @Override
             public void run() {
+                AppProfile appProfile = getAppProfileForPid(pid);
                 if(appProfile!=null) {
                     appProfile.addEntry(crashEntry);
                 }
@@ -230,18 +239,21 @@ public class LoggerService extends Service {
         private class TLogTask implements Runnable {
 
             final TLogEntry logEntry;
+            int pid;
 
-            public TLogTask(String tag, String message, Bundle args, int level, long timestamp) {
+            public TLogTask(String tag, String message, Bundle args, int level, long timestamp, int pid) {
                 logEntry = new TLogEntry();
                 logEntry.tag = tag;
                 logEntry.description = message;
                 logEntry.level = level;
                 logEntry.args = args;
                 logEntry.timestamp = timestamp;
+                this.pid = pid;
             }
 
             @Override
             public void run() {
+                AppProfile appProfile = getAppProfileForPid(pid);
                 if(appProfile!=null) {
                     appProfile.addEntry(logEntry);
                 }
@@ -252,6 +264,7 @@ public class LoggerService extends Service {
         private class PingTask implements Runnable {
 
             final PingEntry pingEntry;
+            int pid;
 
             /**
              * Records a finished ping
@@ -261,13 +274,14 @@ public class LoggerService extends Service {
              * @param message   Message to log along with ping
              * @param token     Token associated with the ping session
              */
-            public PingTask(long timeStart, long timeEnd, String message, int token, long timestamp) {
+            public PingTask(long timeStart, long timeEnd, String message, int token, long timestamp, int pid) {
                 pingEntry = new PingEntry();
                 pingEntry.timestampBegin = timeStart;
                 pingEntry.timestampEnd = timeEnd;
                 pingEntry.message = message;
                 pingEntry.token = token;
                 pingEntry.timestamp = timestamp;
+                this.pid = pid;
             }
 
             /**
@@ -277,13 +291,14 @@ public class LoggerService extends Service {
              * @param message   Message to log along with ping
              * @param token     Token associated with the ping session
              */
-            public PingTask(long timeStart, String message, int token, long timestamp) {
+            public PingTask(long timeStart, String message, int token, long timestamp, int pid) {
                 pingEntry = new PingEntry();
                 pingEntry.timestampBegin = timeStart;
                 pingEntry.timestampEnd = 0;
                 pingEntry.message = message;
                 pingEntry.token = token;
                 pingEntry.timestamp = timestamp;
+                this.pid = pid;
             }
 
             /**
@@ -293,7 +308,7 @@ public class LoggerService extends Service {
              * @param sizeInBytes   Size of data sent / received in bytes
              * @param token         Token associated with the ping session
              */
-            public PingTask(long tickTimestamp, int sizeInBytes, String message, int token) {
+            public PingTask(long tickTimestamp, int sizeInBytes, String message, int token, int pid) {
                 pingEntry = new PingEntry();
                 pingEntry.timestamp = tickTimestamp;
                 pingEntry.sizeInBytes = sizeInBytes;
@@ -301,10 +316,12 @@ public class LoggerService extends Service {
                 pingEntry.timestampBegin = 0;
                 pingEntry.timestampEnd = 0;
                 pingEntry.message = message;
+                this.pid = pid;
             }
 
             @Override
             public void run() {
+                AppProfile appProfile = getAppProfileForPid(pid);
                 if(appProfile!=null) {
                     appProfile.addEntry(pingEntry);
                 }
@@ -341,5 +358,10 @@ public class LoggerService extends Service {
         public static final int ERROR_CODE_SIGNATURE_VERIFICATION_FAILED = 3;
         public static final int ERROR_CODE_SIGNATURE_VERIFICATION_FAILED_MIGHT_NEED_ACTIVATION = 4;
         public static final int ERROR_CODE_TRUST_AGENT_MISSING = 5;
+    }
+
+    private AppProfile getAppProfileForPid(int pid) {
+        String packagName = mPidMap.get(pid);
+        return TraceratopsApplication.from(this).getProfile(packagName);
     }
 }
