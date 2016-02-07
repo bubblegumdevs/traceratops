@@ -1,5 +1,6 @@
 Traceratops
 ===========
+[ ![Download](https://api.bintray.com/packages/bubblegumdevs/Bubblegum/traceratops-sdk/images/download.svg) ](https://bintray.com/bubblegumdevs/Bubblegum/traceratops-sdk/_latestVersion)
 
 An Open Source debugging and logging tool for the casual user
 
