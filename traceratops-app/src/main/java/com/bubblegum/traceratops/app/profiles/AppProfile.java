@@ -22,10 +22,13 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 
 import com.bubblegum.traceratops.app.model.BaseEntry;
+import com.bubblegum.traceratops.app.model.PingEntry;
 import com.bubblegum.traceratops.app.ui.adapters.filters.BaseEntryFilter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class AppProfile {
 
@@ -38,6 +41,7 @@ public abstract class AppProfile {
     List<BaseEntry> mEntryList = new ArrayList<>();
     List<BaseEntry> mFilteredEntryList = new ArrayList<>();
     List<OnEntryListUpdatedListener> mOnEntryListUpdatedListeners = new ArrayList<>();
+    Map<Integer, List<PingEntry>> mPingEntryMap = new HashMap<>();
 
     public String targetPackageName;
 
@@ -135,7 +139,15 @@ public abstract class AppProfile {
         return mFilteredEntryList;
     }
 
+    public Map<Integer, List<PingEntry>> getPingEntries() {
+        return mPingEntryMap;
+    }
+
     public void addEntry(@NonNull BaseEntry entry) {
+        if (entry.getClass().equals(PingEntry.class)) {
+            addPingEntry((PingEntry) entry);
+        }
+
         mEntryList.add(0, entry);
         boolean shouldFilterOut = false;
         for(BaseEntryFilter filter : filters) {
@@ -149,6 +161,19 @@ public abstract class AppProfile {
         }
         android.util.Log.d("TRACERT", "Log added");
         notifyListeners(entry, ENTRY_ACTION_ADDED);
+    }
+
+    private void addPingEntry(PingEntry pingEntry) {
+        int pingId = pingEntry.token;
+        if (mPingEntryMap.containsKey(pingId)) {
+            List<PingEntry> existingPingEntries = mPingEntryMap.get(pingId);
+            existingPingEntries.add(pingEntry);
+            mPingEntryMap.put(pingId, existingPingEntries);
+        } else {
+            List<PingEntry> newPingEntry = new ArrayList<>();
+            newPingEntry.add(pingEntry);
+            mPingEntryMap.put(pingId, newPingEntry);
+        }
     }
 
     public void addOnEntryListUpdatedListener(OnEntryListUpdatedListener onEntryListUpdatedListener) {

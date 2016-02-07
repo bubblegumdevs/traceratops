@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
+  ~
   ~ Copyright 2015 Bubblegum Developers
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,12 +16,14 @@
   ~ limitations under the License.
   -->
 
-<resources>
-    <!-- Standard text sizes -->
-    <dimen name="primary_text_size">18sp</dimen>
-    <dimen name="secondary_text_size">14sp</dimen>
-    <dimen name="tertiary_text_size">14sp</dimen>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
 
-    <!-- Standard margins & paddings -->
-    <dimen name="margin_16dp">16dp</dimen>
-</resources>
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/pings_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</FrameLayout>

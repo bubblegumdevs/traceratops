@@ -41,6 +41,7 @@ import com.bubblegum.traceratops.app.service.LoggerService;
 import com.bubblegum.traceratops.app.ui.Snackable;
 import com.bubblegum.traceratops.app.ui.fragments.DebugFragment;
 import com.bubblegum.traceratops.app.ui.fragments.LoggerFragment;
+import com.bubblegum.traceratops.app.ui.fragments.PingsFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -197,8 +198,10 @@ public class MainActivity extends BaseActivity implements Snackable {
 
         DebugFragment debugFragment = new DebugFragment();
         LoggerFragment loggerFragment = new LoggerFragment();
+        PingsFragment pingsFragment = new PingsFragment();
         adapter.addFragment(loggerFragment, getString(R.string.logger_fragment_title));
         adapter.addFragment(debugFragment, getString(R.string.debug_fragment_title));
+        adapter.addFragment(pingsFragment, getString(R.string.ping_list_fragment_title));
         viewPager.setAdapter(adapter);
     }
 

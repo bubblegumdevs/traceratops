@@ -18,6 +18,7 @@
     <!-- Fragment titles -->
     <string name="debug_fragment_title">Debug</string>
     <string name="logger_fragment_title">Logs</string>
+    <string name="ping_list_fragment_title">Pings</string>
 
     <string name="persistent_notification_title">Traceratops is running</string>
     <string name="persistent_notification_text">Listening for logs and crashes…</string>
@@ -27,8 +28,6 @@
 
     <!-- Detail activity titles -->
     <string name="crash_detail_activity_title">Crash</string>
-    <string name="crash_entry_copied_to_clipboard">Stack trace copied to clipboard.</string>
-    <string name="log_entry_copied_to_clipboard">Log message copied to clipboard.</string>
 
     <!-- List item titles for ping -->
     <string name="ping_start">PING - Begin</string>
@@ -49,9 +48,10 @@
     <string name="error_message_sdk_outdated">The SDK in your app is outdated. Please update the SDK.</string>
     <string name="error_message_signature_verification_failed">Signature verification failed. Please ensure trust agent is signed with the same key as the app</string>
     <string name="error_message_unknown">Unknown error code (%d)</string>
-
+    <string name="error_unfinished_ping">Unfinished ping session</string>
 
     <!-- Toast messages -->
-    <string name="toast_message_stacktrace_copied">Stack trace copied to clipboard</string>
+    <string name="crash_entry_copied_to_clipboard">Stack trace copied to clipboard.</string>
+    <string name="log_entry_copied_to_clipboard">Log message copied to clipboard.</string>
 
 </resources>

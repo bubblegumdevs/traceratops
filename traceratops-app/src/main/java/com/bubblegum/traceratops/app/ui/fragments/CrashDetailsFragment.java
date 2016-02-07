@@ -74,7 +74,7 @@ public class CrashDetailsFragment extends BaseFragment {
                     ClipboardManager cbMan = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
                     ClipData clipData = ClipData.newPlainText("stacktrace", stacktraceView.getText());
                     cbMan.setPrimaryClip(clipData);
-                    Toast.makeText(getActivity(), R.string.toast_message_stacktrace_copied, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), R.string.crash_entry_copied_to_clipboard, Toast.LENGTH_SHORT).show();
                 }
             });
         }

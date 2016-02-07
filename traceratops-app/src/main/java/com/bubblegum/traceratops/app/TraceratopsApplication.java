@@ -19,23 +19,18 @@ package com.bubblegum.traceratops.app;
 import android.app.Activity;
 import android.app.Application;
 import android.app.Service;
-import android.os.Handler;
 import android.os.IBinder;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.bubblegum.traceratops.app.model.BaseEntry;
 import com.bubblegum.traceratops.app.profiles.AppProfile;
 import com.bubblegum.traceratops.app.profiles.ProfileUpdateNotifier;
 import com.bubblegum.traceratops.app.profiles.StandardAppProfile;
-import com.bubblegum.traceratops.app.ui.adapters.filters.BaseEntryFilter;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class TraceratopsApplication extends Application {
 
