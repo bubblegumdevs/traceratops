@@ -23,17 +23,21 @@
         android:id="@+id/row_item_string_group"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="16dp"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/row_item_string_key"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/primary_text_size"/>
 
         <TextView
             android:id="@+id/row_item_string_value"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textSize="@dimen/secondary_text_size"/>
 
     </LinearLayout>
 
@@ -41,12 +45,19 @@
         android:id="@+id/row_item_boolean_group"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
         android:orientation="vertical">
 
         <Switch
             android:id="@+id/row_item_boolean_switch"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/primary_text_size"
+            android:textColor="@android:color/primary_text_light"
+            android:layout_marginStart="16dp"
+            android:layout_marginLeft="16dp"/>
 
     </LinearLayout>
 

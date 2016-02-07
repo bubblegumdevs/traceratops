@@ -49,7 +49,7 @@ public class DebugFragment extends BaseFragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         mRecyclerView = (RecyclerView) view.findViewById(R.id.debugger_recycler_view);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        mDebugItemAdapter = new DebugItemAdapter(getContext(), preferences.getAll());
+        mDebugItemAdapter = new DebugItemAdapter(this, preferences.getAll());
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(llm);

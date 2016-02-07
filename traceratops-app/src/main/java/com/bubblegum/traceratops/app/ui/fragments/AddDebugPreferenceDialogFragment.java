@@ -42,6 +42,9 @@ public class AddDebugPreferenceDialogFragment extends DialogFragment implements 
 
     boolean isBooleanPicked;
 
+    public static final String DEBUG_ARG_EDIT_MODE = "AddDebugPreferenceDialogFragment:EditMode";
+    public static final String DEBUG_KEY_NAME = "AddDebugPreferenceDialogFragment:KeyName";
+
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -68,6 +71,28 @@ public class AddDebugPreferenceDialogFragment extends DialogFragment implements 
         swBoolean = (Switch) layout.findViewById(R.id.debug_value_boolean);
         rbBoolean = (RadioButton) layout.findViewById(R.id.radio_debug_boolean);
         rbString = (RadioButton) layout.findViewById(R.id.radio_debug_string);
+
+        if (getArguments() != null) {
+            boolean isEditMode = getArguments().getBoolean(DEBUG_ARG_EDIT_MODE, false);
+            final String keyName = getArguments().getString(DEBUG_KEY_NAME, null);
+            if (keyName == null) {
+                isEditMode = false;
+            }
+            if (isEditMode) {
+                tvKeyName.setText(keyName);
+                tvKeyName.setEnabled(false);
+                rbBoolean.setVisibility(View.GONE);
+                rbString.setVisibility(View.GONE);
+
+                builder.setNeutralButton(R.string.delete, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
+                        editor.remove(keyName);
+                    }
+                });
+            }
+        }
 
         rbString.setOnCheckedChangeListener(this);
         rbBoolean.setOnCheckedChangeListener(this);

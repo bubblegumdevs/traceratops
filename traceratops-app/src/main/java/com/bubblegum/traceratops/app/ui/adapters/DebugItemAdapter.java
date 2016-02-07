@@ -17,6 +17,8 @@
 package com.bubblegum.traceratops.app.ui.adapters;
 
 import android.content.Context;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +27,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.bubblegum.traceratops.app.R;
+import com.bubblegum.traceratops.app.ui.fragments.AddDebugPreferenceDialogFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,12 +38,15 @@ public class DebugItemAdapter extends RecyclerView.Adapter {
     private final Context mContext;
     private final Map<String, ?> mKeyValuePairs;
     private final List<String> mKeys = new ArrayList<>();
+    private Fragment mAttachedToFragment;
 
     private static final int TYPE_BOOLEAN = 1;
     private static final int TYPE_STRING = 2;
+    private static final String EDIT_PREFERENCE_TAG = "com.bubblegum.traceratops.app.EditDebugPreference";
 
-    public DebugItemAdapter(Context context, Map<String, ?> keyValuePairs) {
-        mContext = context;
+    public DebugItemAdapter(Fragment attachedToFragment, Map<String, ?> keyValuePairs) {
+        mContext = attachedToFragment.getContext();
+        mAttachedToFragment = attachedToFragment;
         mKeyValuePairs = keyValuePairs;
         mKeys.addAll(mKeyValuePairs.keySet());
     }
@@ -49,11 +55,13 @@ public class DebugItemAdapter extends RecyclerView.Adapter {
 
         ViewGroup mStringGroup;
         ViewGroup mBooleanGroup;
+        View itemView;
 
         public PreferenceViewHolder(View itemView) {
             super(itemView);
             mStringGroup = (ViewGroup) itemView.findViewById(R.id.row_item_string_group);
             mBooleanGroup = (ViewGroup) itemView.findViewById(R.id.row_item_boolean_group);
+            this.itemView = itemView;
         }
     }
 
@@ -108,12 +116,24 @@ public class DebugItemAdapter extends RecyclerView.Adapter {
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        String key = mKeys.get(position);
+        final String key = mKeys.get(position);
         if(holder instanceof StringPreferenceViewHolder) {
             ((StringPreferenceViewHolder) holder).fillInString(key, (String) mKeyValuePairs.get(key));
         } else if(holder instanceof BooleanPreferenceViewHolder) {
             ((BooleanPreferenceViewHolder) holder).fillInBoolean(key, (Boolean) mKeyValuePairs.get(key));
         }
+
+        ((PreferenceViewHolder) holder).itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AddDebugPreferenceDialogFragment editDialog = new AddDebugPreferenceDialogFragment();
+                Bundle editArgs = new Bundle();
+                editArgs.putString(AddDebugPreferenceDialogFragment.DEBUG_KEY_NAME, key);
+                editArgs.putBoolean(AddDebugPreferenceDialogFragment.DEBUG_ARG_EDIT_MODE, true);
+                editDialog.setArguments(editArgs);
+                editDialog.show(mAttachedToFragment.getChildFragmentManager(), EDIT_PREFERENCE_TAG);
+            }
+        });
     }
 
     @Override
