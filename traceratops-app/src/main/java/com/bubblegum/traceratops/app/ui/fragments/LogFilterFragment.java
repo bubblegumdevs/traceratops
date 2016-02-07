@@ -35,6 +35,7 @@ import android.widget.TextView;
 import com.bubblegum.traceratops.app.LogStub;
 import com.bubblegum.traceratops.app.R;
 import com.bubblegum.traceratops.app.TraceratopsApplication;
+import com.bubblegum.traceratops.app.profiles.AppProfile;
 import com.bubblegum.traceratops.app.ui.adapters.filters.BaseEntryFilter;
 import com.bubblegum.traceratops.app.ui.adapters.filters.CrashFilter;
 import com.bubblegum.traceratops.app.ui.adapters.filters.LevelFilter;
@@ -100,9 +101,12 @@ public class LogFilterFragment extends DialogFragment implements SeekBar.OnSeekB
     }
 
     private void prefillExistingFilters() {
-        List<BaseEntryFilter> filters = TraceratopsApplication.from(getActivity()).getCurrentFilters();
-        for(BaseEntryFilter filter : filters) {
-            prefillFilter(filter);
+        AppProfile profile = TraceratopsApplication.from(getActivity()).getCurrentAppProfile();
+        if(profile!=null) {
+            List<BaseEntryFilter> filters = profile.getCurrentFilters();
+            for (BaseEntryFilter filter : filters) {
+                prefillFilter(filter);
+            }
         }
     }
 
@@ -120,24 +124,30 @@ public class LogFilterFragment extends DialogFragment implements SeekBar.OnSeekB
     }
 
     private void applyFilters() {
-        clearFilters();
-        if (mCrashSwitch.isChecked()) {
-            CrashFilter crashFilter = new CrashFilter();
-            TraceratopsApplication.from(getActivity()).addFilter(crashFilter);
-        } else {
-            if (mLevelSeekbar.getProgress() > 0) {
-                LevelFilter levelFilter = new LevelFilter(mLevelSeekbar.getProgress() + LogStub.V);
-                TraceratopsApplication.from(getActivity()).addFilter(levelFilter);
-            }
-            if (!TextUtils.isEmpty(mTagValueEt.getText())) {
-                LogTagFilter tagFilter = new LogTagFilter(mTagValueEt.getText());
-                TraceratopsApplication.from(getActivity()).addFilter(tagFilter);
+        AppProfile profile = TraceratopsApplication.from(getActivity()).getCurrentAppProfile();
+        if(profile!=null) {
+            clearFilters();
+            if (mCrashSwitch.isChecked()) {
+                CrashFilter crashFilter = new CrashFilter();
+                profile.addFilter(crashFilter);
+            } else {
+                if (mLevelSeekbar.getProgress() > 0) {
+                    LevelFilter levelFilter = new LevelFilter(mLevelSeekbar.getProgress() + LogStub.V);
+                    profile.addFilter(levelFilter);
+                }
+                if (!TextUtils.isEmpty(mTagValueEt.getText())) {
+                    LogTagFilter tagFilter = new LogTagFilter(mTagValueEt.getText());
+                    profile.addFilter(tagFilter);
+                }
             }
         }
     }
 
     private void clearFilters() {
-        TraceratopsApplication.from(getActivity()).clearFilters();
+        AppProfile profile = TraceratopsApplication.from(getActivity()).getCurrentAppProfile();
+        if(profile!=null) {
+            profile.clearFilters();
+        }
     }
 
     @Override

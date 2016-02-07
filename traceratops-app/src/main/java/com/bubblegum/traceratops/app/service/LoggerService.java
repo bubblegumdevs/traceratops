@@ -40,6 +40,7 @@ import com.bubblegum.traceratops.app.model.CrashEntry;
 import com.bubblegum.traceratops.app.model.LogEntry;
 import com.bubblegum.traceratops.app.model.PingEntry;
 import com.bubblegum.traceratops.app.model.TLogEntry;
+import com.bubblegum.traceratops.app.profiles.AppProfile;
 import com.bubblegum.traceratops.app.ui.activities.CrashDetailsActivity;
 import com.bubblegum.traceratops.app.ui.activities.MainActivity;
 import com.bubblegum.traceratops.app.ui.fragments.CrashDetailsFragment;
@@ -61,8 +62,7 @@ public class LoggerService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         showPersistentNotification();
-        TraceratopsApplication.from(this).setErrorCode(-1);
-        return mBinder;
+        return new TraceratopsBinder();
     }
 
     @Override
@@ -71,7 +71,9 @@ public class LoggerService extends Service {
         return super.onUnbind(intent);
     }
 
-    private IBinder mBinder = new ILoggerService.Stub() {
+    private class TraceratopsBinder extends ILoggerService.Stub {
+
+        AppProfile appProfile;
 
         @Override
         public void log(String tag, String message, String stackTrace, int level) throws RemoteException {
@@ -115,7 +117,7 @@ public class LoggerService extends Service {
 
         @Override
         public int checkVersion(int sdkVersion) throws RemoteException {
-            if(sdkVersion < MIN_SDK_VERSION) {
+            if (sdkVersion < MIN_SDK_VERSION) {
                 return -1;
             }
             return BuildConfig.VERSION_CODE;
@@ -126,173 +128,191 @@ public class LoggerService extends Service {
             Intent errorIntent = new Intent(ACTION_ERROR);
             errorIntent.putExtra(EXTRA_ERROR_CODE, errorCode);
             sendBroadcast(errorIntent);
-            TraceratopsApplication.from(LoggerService.this).setErrorCode(errorCode);
+            if(appProfile!=null) {
+                appProfile.setErrorCode(errorCode);
+            }
         }
 
         @Override
         public void reportPackage(String packageName) throws RemoteException {
-            TraceratopsApplication.from(LoggerService.this).targetPackageName = packageName;
+            appProfile = TraceratopsApplication.from(LoggerService.this).makeAppProfile(this, packageName);
+            if(appProfile!=null) {
+                appProfile.targetPackageName = packageName;
+            }
         }
-    };
 
-    private void queueTLogTask(String tag, String message, Bundle bundle, int level) {
-        mExecutorService.submit(new TLogTask(tag, message, bundle, level, System.currentTimeMillis()));
-    }
+        private void queuePingStartTask(long timeStart, String message, int token) {
+            mExecutorService.submit(new PingTask(timeStart, message, token, System.currentTimeMillis()));
+        }
 
-    private void queueLogTask(String tag, String message, String stackTrace, int level) {
-        mExecutorService.submit(new LogTask(tag, message, stackTrace, level, System.currentTimeMillis()));
-    }
+        private void queuePingEndTask(long timeStart, long timeEnd, String message, int token) {
+            mExecutorService.submit(new PingTask(timeStart, timeEnd, message, token, System.currentTimeMillis()));
+        }
 
-    private void queueCrashTask(String stacktrace, String message) {
-        mExecutorService.submit(new CrashTask(message, stacktrace, System.currentTimeMillis()));
+        private void queuePingTickTask(long tickTimestamp, int sizeInBytes, String message, int token) {
+            mExecutorService.submit(new PingTask(tickTimestamp, sizeInBytes, message, token));
+        }
+
+        private void queueTLogTask(String tag, String message, Bundle bundle, int level) {
+            mExecutorService.submit(new TLogTask(tag, message, bundle, level, System.currentTimeMillis()));
+        }
+
+        private void queueLogTask(String tag, String message, String stackTrace, int level) {
+            mExecutorService.submit(new LogTask(tag, message, stackTrace, level, System.currentTimeMillis()));
+        }
+
+        private void queueCrashTask(String stacktrace, String message) {
+            mExecutorService.submit(new CrashTask(message, stacktrace, System.currentTimeMillis()));
 
         /* Crash notification:
          * Clicking on this notification should take the user directly to that particular crash page
          */
-        NotificationManager notifMan = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        Intent notificationIntent = new Intent(this, CrashDetailsActivity.class);
-        notificationIntent.putExtra(CrashDetailsFragment.EXTRA_CRASH_MSG, message);
-        notificationIntent.putExtra(CrashDetailsFragment.EXTRA_CRASH_STACKTRACE, stacktrace);
-        PendingIntent contentIntent = PendingIntent.getActivity(this, R.id.traceratops_crash_pending_intent, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-        builder.setSmallIcon(R.drawable.ic_notif_default)
-                .setColor(ContextCompat.getColor(this, R.color.colorPrimary))
-                .setContentTitle(getString(R.string.crash_notification_title))
-                .setContentText(getString(R.string.crash_notification_text))
-                .setDefaults(NotificationCompat.DEFAULT_ALL)
-                .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setCategory(NotificationCompat.CATEGORY_ERROR)
-                .setAutoCancel(true)
-                .setContentIntent(contentIntent);
-        notifMan.notify(R.id.traceratops_crash_id, builder.build());
+            NotificationManager notifMan = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            Intent notificationIntent = new Intent(LoggerService.this, CrashDetailsActivity.class);
+            notificationIntent.putExtra(CrashDetailsFragment.EXTRA_CRASH_MSG, message);
+            notificationIntent.putExtra(CrashDetailsFragment.EXTRA_CRASH_STACKTRACE, stacktrace);
+            PendingIntent contentIntent = PendingIntent.getActivity(LoggerService.this, R.id.traceratops_crash_pending_intent, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(LoggerService.this);
+            builder.setSmallIcon(R.drawable.ic_notif_default)
+                    .setColor(ContextCompat.getColor(LoggerService.this, R.color.colorPrimary))
+                    .setContentTitle(LoggerService.this.getString(R.string.crash_notification_title))
+                    .setContentText(LoggerService.this.getString(R.string.crash_notification_text))
+                    .setDefaults(NotificationCompat.DEFAULT_ALL)
+                    .setPriority(NotificationCompat.PRIORITY_MAX)
+                    .setCategory(NotificationCompat.CATEGORY_ERROR)
+                    .setAutoCancel(true)
+                    .setContentIntent(contentIntent);
+            notifMan.notify(R.id.traceratops_crash_id, builder.build());
+        }
+
+
+        private class LogTask implements Runnable {
+
+            final LogEntry logEntry;
+
+            public LogTask(String tag, String message, String stackTrace, int level, long timestamp) {
+                logEntry = new LogEntry();
+                logEntry.tag = tag;
+                logEntry.description = message;
+                logEntry.level = level;
+                logEntry.stackTrace = stackTrace;
+                logEntry.timestamp = timestamp;
+            }
+
+            @Override
+            public void run() {
+                if(appProfile!=null) {
+                    appProfile.addEntry(logEntry);
+                }
+                // TODO add database insertion code
+            }
+        }
+
+        private class CrashTask implements Runnable {
+
+            final CrashEntry crashEntry;
+
+            public CrashTask(String message, String stacktrace, long timestamp) {
+                crashEntry = new CrashEntry();
+                crashEntry.message = message;
+                crashEntry.stacktrace = stacktrace;
+                crashEntry.timestamp = timestamp;
+            }
+
+            @Override
+            public void run() {
+                if(appProfile!=null) {
+                    appProfile.addEntry(crashEntry);
+                }
+            }
+        }
+
+        private class TLogTask implements Runnable {
+
+            final TLogEntry logEntry;
+
+            public TLogTask(String tag, String message, Bundle args, int level, long timestamp) {
+                logEntry = new TLogEntry();
+                logEntry.tag = tag;
+                logEntry.description = message;
+                logEntry.level = level;
+                logEntry.args = args;
+                logEntry.timestamp = timestamp;
+            }
+
+            @Override
+            public void run() {
+                if(appProfile!=null) {
+                    appProfile.addEntry(logEntry);
+                }
+                // TODO add database insertion code
+            }
+        }
+
+        private class PingTask implements Runnable {
+
+            final PingEntry pingEntry;
+
+            /**
+             * Records a finished ping
+             *
+             * @param timeStart Start time of ping
+             * @param timeEnd   End time of ping
+             * @param message   Message to log along with ping
+             * @param token     Token associated with the ping session
+             */
+            public PingTask(long timeStart, long timeEnd, String message, int token, long timestamp) {
+                pingEntry = new PingEntry();
+                pingEntry.timestampBegin = timeStart;
+                pingEntry.timestampEnd = timeEnd;
+                pingEntry.message = message;
+                pingEntry.token = token;
+                pingEntry.timestamp = timestamp;
+            }
+
+            /**
+             * Records the start of a ping
+             *
+             * @param timeStart Start time of ping
+             * @param message   Message to log along with ping
+             * @param token     Token associated with the ping session
+             */
+            public PingTask(long timeStart, String message, int token, long timestamp) {
+                pingEntry = new PingEntry();
+                pingEntry.timestampBegin = timeStart;
+                pingEntry.timestampEnd = 0;
+                pingEntry.message = message;
+                pingEntry.token = token;
+                pingEntry.timestamp = timestamp;
+            }
+
+            /**
+             * Records a tick to indicate some activity associated with an unfinished ping
+             *
+             * @param tickTimestamp Time of tick occurrence
+             * @param sizeInBytes   Size of data sent / received in bytes
+             * @param token         Token associated with the ping session
+             */
+            public PingTask(long tickTimestamp, int sizeInBytes, String message, int token) {
+                pingEntry = new PingEntry();
+                pingEntry.timestamp = tickTimestamp;
+                pingEntry.sizeInBytes = sizeInBytes;
+                pingEntry.token = token;
+                pingEntry.timestampBegin = 0;
+                pingEntry.timestampEnd = 0;
+                pingEntry.message = message;
+            }
+
+            @Override
+            public void run() {
+                if(appProfile!=null) {
+                    appProfile.addEntry(pingEntry);
+                }
+                // TODO add database insertion code
+            }
+        }
     }
 
-    private void queuePingStartTask(long timeStart, String message, int token) {
-        mExecutorService.submit(new PingTask(timeStart, message, token, System.currentTimeMillis()));
-    }
-
-    private void queuePingEndTask(long timeStart, long timeEnd, String message, int token) {
-        mExecutorService.submit(new PingTask(timeStart, timeEnd, message, token, System.currentTimeMillis()));
-    }
-
-    private void queuePingTickTask(long tickTimestamp, int sizeInBytes, String message, int token) {
-        mExecutorService.submit(new PingTask(tickTimestamp, sizeInBytes, message, token));
-    }
-
-    private class LogTask implements Runnable {
-
-        final LogEntry logEntry;
-
-        public LogTask(String tag, String message, String stackTrace, int level, long timestamp) {
-            logEntry = new LogEntry();
-            logEntry.tag = tag;
-            logEntry.description = message;
-            logEntry.level = level;
-            logEntry.stackTrace = stackTrace;
-            logEntry.timestamp = timestamp;
-        }
-
-        @Override
-        public void run() {
-            TraceratopsApplication.from(getApplication()).addEntry(logEntry);
-            // TODO add database insertion code
-        }
-    }
-
-    private class CrashTask implements Runnable {
-
-        final CrashEntry crashEntry;
-
-        public CrashTask(String message, String stacktrace, long timestamp) {
-            crashEntry = new CrashEntry();
-            crashEntry.message = message;
-            crashEntry.stacktrace = stacktrace;
-            crashEntry.timestamp = timestamp;
-        }
-
-        @Override
-        public void run() {
-            TraceratopsApplication.from(getApplication()).addEntry(crashEntry);
-        }
-    }
-
-    private class TLogTask implements Runnable {
-
-        final TLogEntry logEntry;
-
-        public TLogTask(String tag, String message, Bundle args, int level, long timestamp) {
-            logEntry = new TLogEntry();
-            logEntry.tag = tag;
-            logEntry.description = message;
-            logEntry.level = level;
-            logEntry.args = args;
-            logEntry.timestamp = timestamp;
-        }
-
-        @Override
-        public void run() {
-            TraceratopsApplication.from(getApplication()).addEntry(logEntry);
-            // TODO add database insertion code
-        }
-    }
-
-    private class PingTask implements Runnable {
-
-        final PingEntry pingEntry;
-
-        /**
-         * Records a finished ping
-         * @param timeStart Start time of ping
-         * @param timeEnd End time of ping
-         * @param message Message to log along with ping
-         * @param token Token associated with the ping session
-         */
-        public PingTask(long timeStart, long timeEnd, String message, int token, long timestamp) {
-            pingEntry = new PingEntry();
-            pingEntry.timestampBegin = timeStart;
-            pingEntry.timestampEnd = timeEnd;
-            pingEntry.message = message;
-            pingEntry.token = token;
-            pingEntry.timestamp = timestamp;
-        }
-
-        /**
-         * Records the start of a ping
-         * @param timeStart Start time of ping
-         * @param message Message to log along with ping
-         * @param token Token associated with the ping session
-         */
-        public PingTask(long timeStart, String message, int token, long timestamp) {
-            pingEntry = new PingEntry();
-            pingEntry.timestampBegin = timeStart;
-            pingEntry.timestampEnd = 0;
-            pingEntry.message = message;
-            pingEntry.token = token;
-            pingEntry.timestamp = timestamp;
-        }
-
-        /**
-         * Records a tick to indicate some activity associated with an unfinished ping
-         * @param tickTimestamp Time of tick occurrence
-         * @param sizeInBytes Size of data sent / received in bytes
-         * @param token Token associated with the ping session
-         */
-        public PingTask(long tickTimestamp, int sizeInBytes, String message, int token) {
-            pingEntry = new PingEntry();
-            pingEntry.timestamp = tickTimestamp;
-            pingEntry.sizeInBytes = sizeInBytes;
-            pingEntry.token = token;
-            pingEntry.timestampBegin = 0;
-            pingEntry.timestampEnd = 0;
-            pingEntry.message = message;
-        }
-
-        @Override
-        public void run() {
-            TraceratopsApplication.from(getApplication()).addEntry(pingEntry);
-            // TODO add database insertion code
-        }
-    }
 
     private void showPersistentNotification() {
         NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);

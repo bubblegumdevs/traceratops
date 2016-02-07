@@ -20,43 +20,50 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.Service;
 import android.os.Handler;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.bubblegum.traceratops.app.model.BaseEntry;
+import com.bubblegum.traceratops.app.profiles.AppProfile;
+import com.bubblegum.traceratops.app.profiles.ProfileUpdateNotifier;
+import com.bubblegum.traceratops.app.profiles.StandardAppProfile;
 import com.bubblegum.traceratops.app.ui.adapters.filters.BaseEntryFilter;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class TraceratopsApplication extends Application {
 
-    List<BaseEntry> mEntryList = new ArrayList<>();
-    List<BaseEntry> mFilteredEntryList = new ArrayList<>();
-    List<OnEntryListUpdatedListener> mOnEntryListUpdatedListeners = new ArrayList<>();
+    Map<String, AppProfile> mConnectedAppProfiles = new HashMap<>();
 
-    public String targetPackageName;
+    private List<ProfileUpdateNotifier> mProfileUpdateNotifierList = new ArrayList<>();
 
-    List<BaseEntryFilter> filters = new ArrayList<>();
+    public Collection<AppProfile> getProfiles() {
+        return mConnectedAppProfiles.values();
+    }
 
-    private int errorCode = -1;
+    public void addProfileUpdateNotifier(ProfileUpdateNotifier profileUpdateNotifier) {
+        mProfileUpdateNotifierList.add(profileUpdateNotifier);
+    }
 
-    private static final int ENTRY_ACTION_ADDED = 1;
-    private static final int ENTRY_ACTION_CLEARED = 2;
+    public void removeProfileUpdateNotifier(ProfileUpdateNotifier profileUpdateNotifier) {
+        mProfileUpdateNotifierList.remove(profileUpdateNotifier);
+    }
 
-    private Handler mMainThreadHandler;
+    private AppProfile currentAppProfile;
+
+    public @Nullable AppProfile getCurrentAppProfile() {
+        return currentAppProfile;
+    }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        mMainThreadHandler = new Handler(getMainLooper());
-    }
-
-    public void setErrorCode(int errorCode) {
-        this.errorCode = errorCode;
-    }
-
-    public int getErrorCode() {
-        return errorCode;
     }
 
     public static TraceratopsApplication from(Application application) {
@@ -64,14 +71,6 @@ public class TraceratopsApplication extends Application {
             return (TraceratopsApplication) application;
         }
         return null;
-    }
-
-    public void addOnEntryListUpdatedListener(OnEntryListUpdatedListener onEntryListUpdatedListener) {
-        mOnEntryListUpdatedListeners.add(onEntryListUpdatedListener);
-    }
-
-    public void removeOnEntryListUpdatedListener(OnEntryListUpdatedListener onEntryListUpdatedListener) {
-        mOnEntryListUpdatedListeners.remove(onEntryListUpdatedListener);
     }
 
     public static TraceratopsApplication from(Activity activity) {
@@ -88,98 +87,35 @@ public class TraceratopsApplication extends Application {
         return null;
     }
 
-    public List<BaseEntry> getEntries() {
-        return mFilteredEntryList;
-    }
-
-    public void addEntry(@NonNull BaseEntry entry) {
-        mEntryList.add(0, entry);
-        boolean shouldFilterOut = false;
-        for(BaseEntryFilter filter : filters) {
-            shouldFilterOut = filter.shouldFilterOut(entry);
-            if(shouldFilterOut) {
-                break;
+    public AppProfile makeAppProfile(IBinder mBinder, String packageName) {
+        AppProfile profile = mConnectedAppProfiles.get(packageName);
+        if(profile==null) {
+            profile = new StandardAppProfile(mBinder);
+            addProfile(profile);
+            if(currentAppProfile==null) {
+                setProfile(profile);
             }
         }
-        if(!shouldFilterOut) {
-            mFilteredEntryList.add(0, entry);
-        }
-        android.util.Log.d("TRACERT", "Log added");
-        notifyListeners(entry, ENTRY_ACTION_ADDED);
+        return profile;
     }
 
-    public void notifyListeners(final BaseEntry entry, int action) {
-        for(final OnEntryListUpdatedListener listener : mOnEntryListUpdatedListeners) {
-            if(listener!=null) {
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.onEntryListUpdated(mEntryList);
-                    }
-                });
-                switch (action) {
-                    case ENTRY_ACTION_ADDED:
-                        runOnMainThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.onEntryAdded(entry);
-                            }
-                        });
-                        break;
+    public void setProfile(AppProfile profile) {
+        currentAppProfile = profile;
+        updateNotifiers(profile, false);
+    }
 
-                    case ENTRY_ACTION_CLEARED:
-                        runOnMainThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.onEntriesCleared();
-                            }
-                        });
-                        break;
-                }
+    public void addProfile(AppProfile profile) {
+        mConnectedAppProfiles.put(profile.targetPackageName, profile);
+        updateNotifiers(profile, true);
+    }
+
+    private void updateNotifiers(AppProfile profile, boolean addedNewProfile) {
+        for(ProfileUpdateNotifier notifier : mProfileUpdateNotifierList) {
+            if(addedNewProfile) {
+                notifier.onNewProfileAdded(profile);
+            } else {
+                notifier.setProfile(profile);
             }
         }
-    }
-
-    private void runOnMainThread(Runnable runnable) {
-        if(mMainThreadHandler!=null) {
-            mMainThreadHandler.post(runnable);
-        }
-    }
-
-    public void clearEntries() {
-        mEntryList.clear();
-        mFilteredEntryList.clear();
-    }
-
-    public interface OnEntryListUpdatedListener {
-        void onEntryListUpdated(List<BaseEntry> mEntryList);
-        void onEntryAdded(BaseEntry newEntry);
-        void onEntriesCleared();
-    }
-
-    public void addFilter(BaseEntryFilter filter) {
-        filters.add(filter);
-        List<BaseEntry> entriesToBeRemoved = new ArrayList<>();
-        for(int i = 0; i < mFilteredEntryList.size(); i++) {
-            BaseEntry entry = mFilteredEntryList.get(i);
-            if(filter.shouldFilterOut(entry)) {
-                entriesToBeRemoved.add(0, entry);
-            }
-        }
-        for(BaseEntry entry : entriesToBeRemoved) {
-            mFilteredEntryList.remove(entry);
-        }
-        notifyListeners(null, 0);
-    }
-
-    public void clearFilters() {
-        filters.clear();
-        mFilteredEntryList.clear();
-        mFilteredEntryList.addAll(mEntryList);
-        notifyListeners(null, 0);
-    }
-
-    public List<BaseEntryFilter> getCurrentFilters() {
-        return filters;
     }
 }

@@ -33,6 +33,8 @@ import com.bubblegum.traceratops.app.LogStub;
 import com.bubblegum.traceratops.app.R;
 import com.bubblegum.traceratops.app.TraceratopsApplication;
 import com.bubblegum.traceratops.app.model.BaseEntry;
+import com.bubblegum.traceratops.app.profiles.AppProfile;
+import com.bubblegum.traceratops.app.profiles.ProfileUpdateNotifier;
 import com.bubblegum.traceratops.app.ui.activities.BaseActivity;
 import com.bubblegum.traceratops.app.ui.adapters.BaseEntryAdapter;
 import com.bubblegum.traceratops.app.ui.adapters.filters.LevelFilter;
@@ -43,10 +45,12 @@ import com.bubblegum.traceratops.app.ui.adapters.plugins.TLogAdapterPlugin;
 
 import java.util.List;
 
-public class LoggerFragment extends BaseFragment implements TraceratopsApplication.OnEntryListUpdatedListener {
+public class LoggerFragment extends BaseFragment {
 
     RecyclerView mRecyclerView;
     BaseEntryAdapter mEntryAdapter;
+
+    private ProfileUpdateNotifier mNotifier;
 
     public static final String FILTER_DIALOG_FRAGMENT_TAG = "traceratops:log_filter_fragment_dialog";
 
@@ -59,8 +63,17 @@ public class LoggerFragment extends BaseFragment implements TraceratopsApplicati
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         mRecyclerView = (RecyclerView) view.findViewById(R.id.logger_recycler_view);
+        AppProfile profile = TraceratopsApplication.from(getActivity()).getCurrentAppProfile();
+        if(profile!=null) {
+            setAdapterProfile(profile);
+        }
+        setHasOptionsMenu(true);
+        super.onViewCreated(view, savedInstanceState);
+    }
+
+    private void setAdapterProfile(AppProfile profile) {
         BaseActivity activity = (BaseActivity) getActivity();
-        mEntryAdapter = new BaseEntryAdapter(activity, TraceratopsApplication.from(getActivity()).getEntries());
+        mEntryAdapter = new BaseEntryAdapter(activity, profile.getEntries());
         mEntryAdapter.addAdapterPlugin(new LogAdapterPlugin(activity))
                 .addAdapterPlugin(new TLogAdapterPlugin(activity))
                 .addAdapterPlugin(new PingAdapterPlugin(activity))
@@ -69,42 +82,45 @@ public class LoggerFragment extends BaseFragment implements TraceratopsApplicati
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(llm);
         mRecyclerView.setAdapter(mEntryAdapter);
-        setHasOptionsMenu(true);
-        super.onViewCreated(view, savedInstanceState);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        mEntryAdapter.notifyDataSetChanged();
-
+//        mEntryAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        TraceratopsApplication.from(getActivity()).addOnEntryListUpdatedListener(this);
+        mNotifier = new ProfileUpdateNotifier(TraceratopsApplication.from(getActivity()).getCurrentAppProfile()) {
+            @Override
+            protected void onProfileChanged(AppProfile newProfile, AppProfile oldProfile) {
+                setAdapterProfile(newProfile);
+            }
+
+            @Override
+            public void onEntryListUpdated(List<BaseEntry> mEntryList) {
+                mEntryAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onEntryAdded(BaseEntry newEntry) {
+
+            }
+
+            @Override
+            public void onEntriesCleared() {
+
+            }
+        };
+        TraceratopsApplication.from(getActivity()).addProfileUpdateNotifier(mNotifier);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        TraceratopsApplication.from(getActivity()).removeOnEntryListUpdatedListener(this);
-    }
-
-    @Override
-    public void onEntryListUpdated(List<BaseEntry> mEntryList) {
-        mEntryAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void onEntryAdded(BaseEntry newEntry) {
-
-    }
-
-    @Override
-    public void onEntriesCleared() {
-
+        TraceratopsApplication.from(getActivity()).removeProfileUpdateNotifier(mNotifier);
     }
 
     @Override

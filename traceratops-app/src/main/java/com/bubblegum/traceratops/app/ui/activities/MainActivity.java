@@ -31,21 +31,58 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
-import android.widget.Toast;
-import android.widget.Toolbar;
 
 import com.bubblegum.traceratops.app.R;
 import com.bubblegum.traceratops.app.TraceratopsApplication;
+import com.bubblegum.traceratops.app.model.BaseEntry;
+import com.bubblegum.traceratops.app.profiles.AppProfile;
+import com.bubblegum.traceratops.app.profiles.ProfileUpdateNotifier;
 import com.bubblegum.traceratops.app.service.LoggerService;
 import com.bubblegum.traceratops.app.ui.Snackable;
 import com.bubblegum.traceratops.app.ui.fragments.DebugFragment;
 import com.bubblegum.traceratops.app.ui.fragments.LoggerFragment;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends BaseActivity implements Snackable {
 
     CoordinatorLayout mCoordinatorLayout;
+
+    AppProfile mCurrentAppProfile = null;
+
+    android.support.v7.widget.Toolbar toolbar;
+
+    ProfileUpdateNotifier mNotifier = new ProfileUpdateNotifier(null) {
+        @Override
+        protected void onProfileChanged(AppProfile newProfile, AppProfile oldProfile) {
+
+        }
+
+        @Override
+        public void onEntryListUpdated(List<BaseEntry> mEntryList) {
+
+        }
+
+        @Override
+        public void onEntryAdded(BaseEntry newEntry) {
+
+        }
+
+        @Override
+        public void onEntriesCleared() {
+
+        }
+
+        @Override
+        public void onNewProfileAdded(AppProfile profile) {
+            initDrawer();
+        }
+    };
+
+    private void initDrawer() {
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +91,7 @@ public class MainActivity extends BaseActivity implements Snackable {
 
         mCoordinatorLayout = (CoordinatorLayout) findViewById(R.id.parent);
 
-        android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.toolbar);
+        toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
@@ -64,16 +101,20 @@ public class MainActivity extends BaseActivity implements Snackable {
         tabLayout.setupWithViewPager(viewPager);
 
         getSupportActionBar().setTitle(getString(R.string.dash_board));
-        final int errorCode = TraceratopsApplication.from(this).getErrorCode();
-        final String errorMessage = getErrorMessageIfAny(errorCode);
-        if(errorMessage!=null) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showSnackbar(errorMessage, Snackbar.LENGTH_INDEFINITE, getErrorMessageActionLabel(errorCode), getErrorMessageAction(errorCode));
-                }
-            }, 300);
+        mCurrentAppProfile = TraceratopsApplication.from(this).getCurrentAppProfile();
+        if(mCurrentAppProfile!=null) {
+            final int errorCode = mCurrentAppProfile.getErrorCode();
+            final String errorMessage = getErrorMessageIfAny(errorCode);
+            if (errorMessage != null) {
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        showSnackbar(errorMessage, Snackbar.LENGTH_INDEFINITE, getErrorMessageActionLabel(errorCode), getErrorMessageAction(errorCode));
+                    }
+                }, 300);
+            }
         }
+        initDrawer();
     }
 
     @Override
@@ -120,7 +161,9 @@ public class MainActivity extends BaseActivity implements Snackable {
                 return new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        confirmTrustAgent(TraceratopsApplication.from(MainActivity.this).targetPackageName);
+                        if(mCurrentAppProfile!=null) {
+                            confirmTrustAgent(mCurrentAppProfile.targetPackageName);
+                        }
                     }
                 };
             default:
