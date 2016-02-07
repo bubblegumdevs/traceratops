@@ -17,6 +17,7 @@
 <resources>
     <item name="traceratops_running_id" type="id" />
     <item name="traceratops_notification_pending_intent" type="id" />
+    <item name="traceratops_notification_stop_pending_intent" type="id" />
 
     <item name="traceratops_crash_id" type="id" />
     <item name="traceratops_crash_pending_intent" type="id" />

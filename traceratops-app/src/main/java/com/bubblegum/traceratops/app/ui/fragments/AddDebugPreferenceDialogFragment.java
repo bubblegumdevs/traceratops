@@ -17,6 +17,7 @@
 package com.bubblegum.traceratops.app.ui.fragments;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -32,6 +33,8 @@ import android.widget.RadioButton;
 import android.widget.Switch;
 
 import com.bubblegum.traceratops.app.R;
+import com.bubblegum.traceratops.app.TraceratopsApplication;
+import com.bubblegum.traceratops.app.profiles.AppProfile;
 
 public class AddDebugPreferenceDialogFragment extends DialogFragment implements CompoundButton.OnCheckedChangeListener {
 
@@ -44,6 +47,7 @@ public class AddDebugPreferenceDialogFragment extends DialogFragment implements 
 
     public static final String DEBUG_ARG_EDIT_MODE = "AddDebugPreferenceDialogFragment:EditMode";
     public static final String DEBUG_KEY_NAME = "AddDebugPreferenceDialogFragment:KeyName";
+    public static final String DEBUG_VALUE = "AddDebugPreferenceDialogFragment:Value";
 
     @NonNull
     @Override
@@ -75,20 +79,26 @@ public class AddDebugPreferenceDialogFragment extends DialogFragment implements 
         if (getArguments() != null) {
             boolean isEditMode = getArguments().getBoolean(DEBUG_ARG_EDIT_MODE, false);
             final String keyName = getArguments().getString(DEBUG_KEY_NAME, null);
+            final String keyValue = getArguments().getString(DEBUG_VALUE, null);
             if (keyName == null) {
                 isEditMode = false;
             }
             if (isEditMode) {
                 tvKeyName.setText(keyName);
                 tvKeyName.setEnabled(false);
+                tvKeyValue.setText(keyValue);
                 rbBoolean.setVisibility(View.GONE);
                 rbString.setVisibility(View.GONE);
 
                 builder.setNeutralButton(R.string.delete, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
-                        editor.remove(keyName);
+                        SharedPreferences preferences = getSharedPreferences();
+                        if(preferences==null) {
+                            return;
+                        }
+                        SharedPreferences.Editor editor = preferences.edit();
+                        editor.remove(keyName).commit();
                     }
                 });
             }
@@ -103,13 +113,17 @@ public class AddDebugPreferenceDialogFragment extends DialogFragment implements 
     }
 
     private void addPreference() {
-        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
+        SharedPreferences preferences = getSharedPreferences();
+        if(preferences==null) {
+            return;
+        }
+        SharedPreferences.Editor editor = preferences.edit();
         if(isBooleanPicked) {
             editor.putBoolean(tvKeyName.getText().toString(), swBoolean.isChecked());
         } else {
             editor.putString(tvKeyName.getText().toString(), tvKeyValue.getText().toString());
         }
-        editor.apply();
+        editor.commit();
     }
 
     @Override
@@ -123,6 +137,15 @@ public class AddDebugPreferenceDialogFragment extends DialogFragment implements 
             tvKeyValue.setVisibility(View.GONE);
             swBoolean.setVisibility(View.VISIBLE);
             isBooleanPicked = true;
+        }
+    }
+
+    private SharedPreferences getSharedPreferences() {
+        AppProfile profile = TraceratopsApplication.from(getActivity()).getCurrentAppProfile();
+        if(profile==null) {
+            return null;
+        } else {
+            return getActivity().getSharedPreferences(profile.targetPackageName, Context.MODE_PRIVATE);
         }
     }
 }

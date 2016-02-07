@@ -54,4 +54,6 @@
     <string name="crash_entry_copied_to_clipboard">Stack trace copied to clipboard.</string>
     <string name="log_entry_copied_to_clipboard">Log message copied to clipboard.</string>
 
+    <string name="stop">Stop</string>
+
 </resources>

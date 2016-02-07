@@ -16,6 +16,7 @@
 
 package com.bubblegum.traceratops.app.ui.fragments;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -30,14 +31,42 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.bubblegum.traceratops.app.R;
+import com.bubblegum.traceratops.app.TraceratopsApplication;
+import com.bubblegum.traceratops.app.model.BaseEntry;
+import com.bubblegum.traceratops.app.profiles.AppProfile;
+import com.bubblegum.traceratops.app.profiles.ProfileUpdateNotifier;
 import com.bubblegum.traceratops.app.ui.adapters.DebugItemAdapter;
 
-public class DebugFragment extends BaseFragment {
+import java.util.List;
+
+public class DebugFragment extends BaseFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String ADD_PREFERENCE_TAG = "com.bubblegum.traceratops.app.AddDebugPreference";
 
     RecyclerView mRecyclerView;
     DebugItemAdapter mDebugItemAdapter;
+
+    ProfileUpdateNotifier mNotifier = new ProfileUpdateNotifier(null) {
+        @Override
+        protected void onProfileChanged(AppProfile newProfile, AppProfile oldProfile) {
+            updateUI();
+        }
+
+        @Override
+        public void onEntryListUpdated(List<BaseEntry> mEntryList) {
+
+        }
+
+        @Override
+        public void onEntryAdded(BaseEntry newEntry) {
+
+        }
+
+        @Override
+        public void onEntriesCleared() {
+
+        }
+    };
 
     @Nullable
     @Override
@@ -48,14 +77,22 @@ public class DebugFragment extends BaseFragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         mRecyclerView = (RecyclerView) view.findViewById(R.id.debugger_recycler_view);
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        mDebugItemAdapter = new DebugItemAdapter(this, preferences.getAll());
-        LinearLayoutManager llm = new LinearLayoutManager(getContext());
-        llm.setOrientation(LinearLayoutManager.VERTICAL);
-        mRecyclerView.setLayoutManager(llm);
-        mRecyclerView.setAdapter(mDebugItemAdapter);
-        setHasOptionsMenu(true);
+        updateUI();
         super.onViewCreated(view, savedInstanceState);
+    }
+
+    private void updateUI() {
+        SharedPreferences preferences = getSharedPreferences();
+        if(preferences!=null) {
+            mDebugItemAdapter = new DebugItemAdapter(this, preferences.getAll());
+            preferences.unregisterOnSharedPreferenceChangeListener(this);
+            preferences.registerOnSharedPreferenceChangeListener(this);
+            LinearLayoutManager llm = new LinearLayoutManager(getContext());
+            llm.setOrientation(LinearLayoutManager.VERTICAL);
+            mRecyclerView.setLayoutManager(llm);
+            mRecyclerView.setAdapter(mDebugItemAdapter);
+            setHasOptionsMenu(true);
+        }
     }
 
     @Override
@@ -75,7 +112,45 @@ public class DebugFragment extends BaseFragment {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(mDebugItemAdapter!=null) {
+            mDebugItemAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        TraceratopsApplication.from(getActivity()).addProfileUpdateNotifier(mNotifier);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        TraceratopsApplication.from(getActivity()).removeProfileUpdateNotifier(mNotifier);
+        SharedPreferences preferences = getSharedPreferences();
+        if(preferences!=null) {
+            preferences.unregisterOnSharedPreferenceChangeListener(this);
+        }
+    }
+
     private void addPreference() {
         new AddDebugPreferenceDialogFragment().show(getChildFragmentManager(), ADD_PREFERENCE_TAG);
+    }
+
+    private SharedPreferences getSharedPreferences() {
+        AppProfile profile = TraceratopsApplication.from(getActivity()).getCurrentAppProfile();
+        if(profile==null) {
+            return null;
+        } else {
+            return getActivity().getSharedPreferences(profile.targetPackageName, Context.MODE_PRIVATE);
+        }
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        updateUI();
     }
 }

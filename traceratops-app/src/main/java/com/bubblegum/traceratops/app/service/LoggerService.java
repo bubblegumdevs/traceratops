@@ -20,8 +20,11 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Bundle;
@@ -59,16 +62,41 @@ public class LoggerService extends Service {
     public static final String EXTRA_ERROR_CODE = ":traceratops:loggerService:errorCode";
 
     private static final int MIN_SDK_VERSION = 1;
+    private static final String ACTION_STOP = "com.bubblegum.traceratops.app.STOP";
 
     private SparseArray<String> mPidMap = new SparseArray<>();
 
     ExecutorService mExecutorService = Executors.newFixedThreadPool(1);
+
+    private BroadcastReceiver mStopReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            android.util.Log.d("TRACERT", "Received");
+            stopSelf();
+        }
+    };
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         showPersistentNotification();
         return new TraceratopsBinder();
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        registerReceiver(mStopReceiver, new IntentFilter(ACTION_STOP));
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        try {
+            unregisterReceiver(mStopReceiver);
+        } catch (IllegalArgumentException iae) {
+            // not registered
+        }
     }
 
     @Override
@@ -91,12 +119,20 @@ public class LoggerService extends Service {
 
         @Override
         public String getString(String key, String defaultValue) throws RemoteException {
-            return PreferenceManager.getDefaultSharedPreferences(LoggerService.this).getString(key, defaultValue);
+            SharedPreferences preferences = getSharedPreferences(Binder.getCallingPid());
+            if(preferences==null) {
+                return defaultValue;
+            }
+            return preferences.getString(key, defaultValue);
         }
 
         @Override
         public boolean getBoolean(String key, boolean defaultValue) throws RemoteException {
-            return PreferenceManager.getDefaultSharedPreferences(LoggerService.this).getBoolean(key, defaultValue);
+            SharedPreferences preferences = getSharedPreferences(Binder.getCallingPid());
+            if(preferences==null) {
+                return defaultValue;
+            }
+            return preferences.getBoolean(key, defaultValue);
         }
 
         @Override
@@ -334,8 +370,10 @@ public class LoggerService extends Service {
     private void showPersistentNotification() {
         NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, R.id.traceratops_notification_pending_intent, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent stopPendingIntent = PendingIntent.getBroadcast(this, R.id.traceratops_notification_stop_pending_intent, new Intent(ACTION_STOP), PendingIntent.FLAG_UPDATE_CURRENT);
         Notification notification = new NotificationCompat.Builder(this)
                 .setOngoing(true)
+                .addAction(new NotificationCompat.Action(R.drawable.ic_notif_stop, getString(R.string.stop), stopPendingIntent))
                 .setColor(ContextCompat.getColor(this, R.color.colorPrimary))
                 .setCategory(NotificationCompat.CATEGORY_STATUS)
                 .setPriority(NotificationCompat.PRIORITY_MIN)
@@ -363,5 +401,14 @@ public class LoggerService extends Service {
     private AppProfile getAppProfileForPid(int pid) {
         String packagName = mPidMap.get(pid);
         return TraceratopsApplication.from(this).getProfile(packagName);
+    }
+
+    private SharedPreferences getSharedPreferences(int pid) {
+        AppProfile profile = getAppProfileForPid(pid);
+        if(profile==null) {
+            return null;
+        } else {
+            return getSharedPreferences(profile.targetPackageName, Context.MODE_PRIVATE);
+        }
     }
 }

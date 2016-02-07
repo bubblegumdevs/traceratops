@@ -119,21 +119,21 @@ public class DebugItemAdapter extends RecyclerView.Adapter {
         final String key = mKeys.get(position);
         if(holder instanceof StringPreferenceViewHolder) {
             ((StringPreferenceViewHolder) holder).fillInString(key, (String) mKeyValuePairs.get(key));
+            ((StringPreferenceViewHolder) holder).itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    AddDebugPreferenceDialogFragment editDialog = new AddDebugPreferenceDialogFragment();
+                    Bundle editArgs = new Bundle();
+                    editArgs.putString(AddDebugPreferenceDialogFragment.DEBUG_KEY_NAME, key);
+                    editArgs.putString(AddDebugPreferenceDialogFragment.DEBUG_VALUE, (String) mKeyValuePairs.get(key));
+                    editArgs.putBoolean(AddDebugPreferenceDialogFragment.DEBUG_ARG_EDIT_MODE, true);
+                    editDialog.setArguments(editArgs);
+                    editDialog.show(mAttachedToFragment.getChildFragmentManager(), EDIT_PREFERENCE_TAG);
+                }
+            });
         } else if(holder instanceof BooleanPreferenceViewHolder) {
             ((BooleanPreferenceViewHolder) holder).fillInBoolean(key, (Boolean) mKeyValuePairs.get(key));
         }
-
-        ((PreferenceViewHolder) holder).itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AddDebugPreferenceDialogFragment editDialog = new AddDebugPreferenceDialogFragment();
-                Bundle editArgs = new Bundle();
-                editArgs.putString(AddDebugPreferenceDialogFragment.DEBUG_KEY_NAME, key);
-                editArgs.putBoolean(AddDebugPreferenceDialogFragment.DEBUG_ARG_EDIT_MODE, true);
-                editDialog.setArguments(editArgs);
-                editDialog.show(mAttachedToFragment.getChildFragmentManager(), EDIT_PREFERENCE_TAG);
-            }
-        });
     }
 
     @Override
