@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    buildToolsVersion "23.0.3"
 
     defaultConfig {
         applicationId "com.bubblegum.traceratops.app"
@@ -12,11 +12,15 @@ android {
         versionName "1.1.0"
     }
     signingConfigs {
+
         release {
-            storeFile file(System.getenv('BBGMSTORELOCATION'))
-            storePassword System.getenv("BBGMSTOREPASS")
-            keyAlias System.getenv("BBGMALIAS")
-            keyPassword System.getenv("BBGMKEYPASS")
+            def propsFile = rootProject.file('keystore.properties')
+            def props = new Properties()
+            props.load(new FileInputStream(propsFile))
+            storeFile = file(props['BBGMSTORELOCATION'])
+            storePassword = props['BBGMSTOREPASS']
+            keyAlias = props['BBGMALIAS']
+            keyPassword = props['BBGMKEYPASS']
         }
     }
     buildTypes {
@@ -31,7 +35,7 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.1.1'
-    compile 'com.android.support:recyclerview-v7:23.1.1'
-    compile 'com.android.support:design:23.1.1'
+    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.android.support:recyclerview-v7:23.4.0'
+    compile 'com.android.support:design:23.4.0'
 }
